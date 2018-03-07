@@ -12,6 +12,8 @@
 #include <sysent.h>
 #include <thread.h>
 
+typedef void (*exc_handler_t)(exc_frame_t *);
+
 extern const char _ebase[];
 
 void mips_intr_disable(void) {
@@ -119,17 +121,6 @@ const char *const exceptions[32] = {
     [EXC_MCHECK] = "Machine checkcore",
 };
 
-void kernel_oops(exc_frame_t *frame) {
-  unsigned code = (frame->cause & CR_X_MASK) >> CR_X_SHIFT;
-
-  klog("%s at $%08x!", exceptions[code], frame->pc);
-  if ((code == EXC_ADEL || code == EXC_ADES) ||
-      (code == EXC_IBE || code == EXC_DBE))
-    klog("Caused by reference to $%08x!", frame->badvaddr);
-
-  panic("Unhandled exception!");
-}
-
 static void cpu_get_syscall_args(const exc_frame_t *frame,
                                  syscall_args_t *args) {
   args->code = frame->v0;
@@ -175,10 +166,28 @@ static void fpe_handler(exc_frame_t *frame) {
  * handlers numbers please check 5.23 Table of MIPS32 4KEc User's Manual.
  */
 
-void *general_exception_table[32] = {[EXC_MOD] = tlb_exception_handler,
-                                     [EXC_TLBL] = tlb_exception_handler,
-                                     [EXC_TLBS] = tlb_exception_handler,
-                                     [EXC_SYS] = syscall_handler,
-                                     [EXC_FPE] = fpe_handler,
-                                     [EXC_MSAFPE] = fpe_handler,
-                                     [EXC_OVF] = fpe_handler};
+static exc_handler_t general_exception_table[32] =
+  {[EXC_MOD] = tlb_exception_handler,
+   [EXC_TLBL] = tlb_exception_handler,
+   [EXC_TLBS] = tlb_exception_handler,
+   [EXC_SYS] = syscall_handler,
+   [EXC_FPE] = fpe_handler,
+   [EXC_MSAFPE] = fpe_handler,
+   [EXC_OVF] = fpe_handler};
+
+void mips_exc_handler(exc_frame_t *frame) {
+  unsigned code = (frame->cause & CR_X_MASK) >> CR_X_SHIFT;
+
+  exc_handler_t handler = general_exception_table[code];
+
+  if (!handler) {
+    klog("%s at $%08x!", exceptions[code], frame->pc);
+    if ((code == EXC_ADEL || code == EXC_ADES) ||
+        (code == EXC_IBE || code == EXC_DBE))
+      klog("Caused by reference to $%08x!", frame->badvaddr);
+
+    panic("Unhandled exception!");
+  }
+
+  (*handler)(frame);
+}
