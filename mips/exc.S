@@ -86,7 +86,7 @@ user_exc_enter:
         lw      t1, TD_KSTACK+STK_SIZE(t0)
         add     sp, t1
 
-        # No exeception frame so set td_frame to NULL.
+        # No exeception frame so set td_kframe to NULL.
         sw      $0, TD_KFRAME(t0)
 
         # Turn off FPU, enter kernel mode,
@@ -99,16 +99,6 @@ user_exc_enter:
         # Call C interrupt handler routine.
         move    a0, k0
         jalr    k1
-        nop
-
-        # Interrupts may be enabled here and that's ok.
-        LOAD_PCPU(t0)
-        lw      t0, PCPU_CURTHREAD(t0)
-        lw      t1, TD_FLAGS(t0)
-        andi    t1, (TDF_NEEDSWITCH | TDF_NEEDSIGCHK)
-        beqz    t1, user_exc_leave
-        move    a0, sp
-        jal     exc_before_leave
         nop
 
 user_exc_leave:
@@ -239,7 +229,7 @@ kern_exc_enter:
         # Load kernel global pointer.
         la      gp, _gp
 
-        # Save stack frame pointer into td_frame.
+        # Save stack frame pointer into td_kframe.
         LOAD_PCPU(t0)
         lw      t0, PCPU_CURTHREAD(t0)
         sw      sp, TD_KFRAME(t0)
@@ -247,16 +237,6 @@ kern_exc_enter:
         # Call C interrupt handler routine.
         move    a0, sp
         jalr    k1
-        nop
-
-        # Interrupts may be enabled here and that's ok.
-        LOAD_PCPU(t0)
-        lw      t0, PCPU_CURTHREAD(t0)
-        lw      t1, TD_FLAGS(t0)
-        andi    t1, (TDF_NEEDSWITCH | TDF_NEEDSIGCHK)
-        beqz    t1, kern_exc_leave
-        move    a0, sp
-        jal     exc_before_leave
         nop
 
 kern_exc_leave:

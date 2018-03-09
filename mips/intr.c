@@ -84,6 +84,7 @@ void mips_intr_teardown(intr_handler_t *handler) {
   }
 }
 
+/* Hardware interrupt handler is called with interrupts disabled. */
 void mips_intr_handler(exc_frame_t *frame) {
   unsigned pending = (frame->cause & frame->sr) & CR_IP_MASK;
 
@@ -97,6 +98,10 @@ void mips_intr_handler(exc_frame_t *frame) {
   }
 
   mips32_set_c0(C0_CAUSE, frame->cause & ~CR_IP_MASK);
+
+  /* TODO `exc_before_leave` should be called with enabled interrupts but
+   * disabled preemption. */
+  exc_before_leave(frame);
 }
 
 const char *const exceptions[32] = {
@@ -166,7 +171,7 @@ static void fpe_handler(exc_frame_t *frame) {
  * handlers numbers please check 5.23 Table of MIPS32 4KEc User's Manual.
  */
 
-static exc_handler_t general_exception_table[32] =
+static exc_handler_t user_exception_table[32] =
   {[EXC_MOD] = tlb_exception_handler,
    [EXC_TLBL] = tlb_exception_handler,
    [EXC_TLBS] = tlb_exception_handler,
@@ -175,19 +180,38 @@ static exc_handler_t general_exception_table[32] =
    [EXC_MSAFPE] = fpe_handler,
    [EXC_OVF] = fpe_handler};
 
+static exc_handler_t kernel_exception_table[32] =
+  {[EXC_INTR] = mips_intr_handler, [EXC_MOD] = tlb_exception_handler,
+   [EXC_TLBL] = tlb_exception_handler, [EXC_TLBS] = tlb_exception_handler};
+
+static inline unsigned exc_code(exc_frame_t *frame) {
+  return (frame->cause & CR_X_MASK) >> CR_X_SHIFT;
+}
+
+static noreturn void kernel_oops(exc_frame_t *frame) {
+  unsigned code = exc_code(frame);
+
+  klog("%s at $%08x!", exceptions[code], frame->pc);
+  if ((code == EXC_ADEL || code == EXC_ADES) ||
+      (code == EXC_IBE || code == EXC_DBE))
+    klog("Caused by reference to $%08x!", frame->badvaddr);
+
+  panic("Unhandled exception!");
+}
+
+/* General exception handler is called with interrupts disabled. */
 void mips_exc_handler(exc_frame_t *frame) {
-  unsigned code = (frame->cause & CR_X_MASK) >> CR_X_SHIFT;
+  bool kernel = (frame->sr & SR_KSU_MASK) == 0;
 
-  exc_handler_t handler = general_exception_table[code];
+  exc_handler_t handler =
+    (kernel ? kernel_exception_table : user_exception_table)[exc_code(frame)];
 
-  if (!handler) {
-    klog("%s at $%08x!", exceptions[code], frame->pc);
-    if ((code == EXC_ADEL || code == EXC_ADES) ||
-        (code == EXC_IBE || code == EXC_DBE))
-      klog("Caused by reference to $%08x!", frame->badvaddr);
+  if (!handler)
+    kernel_oops(frame);
 
-    panic("Unhandled exception!");
-  }
-
+  /* TODO If `handler` is not hardware interrupt handler, then it should be
+   * called with interrupts enabled. Preemption state should not be altered. */
   (*handler)(frame);
+
+  exc_before_leave(frame);
 }
