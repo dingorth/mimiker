@@ -86,6 +86,8 @@ void mips_intr_teardown(intr_handler_t *handler) {
 
 /* Hardware interrupt handler is called with interrupts disabled. */
 void mips_intr_handler(exc_frame_t *frame) {
+  assert(intr_disabled());
+
   unsigned pending = (frame->cause & frame->sr) & CR_IP_MASK;
 
   for (int i = 7; i >= 0; i--) {
@@ -102,6 +104,8 @@ void mips_intr_handler(exc_frame_t *frame) {
   /* TODO `exc_before_leave` should be called with enabled interrupts but
    * disabled preemption. */
   exc_before_leave(frame);
+
+  assert(intr_disabled());
 }
 
 const char *const exceptions[32] = {
@@ -136,6 +140,8 @@ static void cpu_get_syscall_args(const exc_frame_t *frame,
 }
 
 static void syscall_handler(exc_frame_t *frame) {
+  assert(!intr_disabled());
+
   /* Eventually we will want a platform-independent syscall entry, so
      argument retrieval is done separately */
   syscall_args_t args;
@@ -181,8 +187,8 @@ static exc_handler_t user_exception_table[32] =
    [EXC_OVF] = fpe_handler};
 
 static exc_handler_t kernel_exception_table[32] =
-  {[EXC_INTR] = mips_intr_handler, [EXC_MOD] = tlb_exception_handler,
-   [EXC_TLBL] = tlb_exception_handler, [EXC_TLBS] = tlb_exception_handler};
+  {[EXC_MOD] = tlb_exception_handler, [EXC_TLBL] = tlb_exception_handler,
+   [EXC_TLBS] = tlb_exception_handler};
 
 static inline unsigned exc_code(exc_frame_t *frame) {
   return (frame->cause & CR_X_MASK) >> CR_X_SHIFT;
@@ -201,17 +207,34 @@ static noreturn void kernel_oops(exc_frame_t *frame) {
 
 /* General exception handler is called with interrupts disabled. */
 void mips_exc_handler(exc_frame_t *frame) {
-  bool kernel = (frame->sr & SR_KSU_MASK) == 0;
+  unsigned code = exc_code(frame);
+  bool kernel_mode = (frame->sr & SR_KSU_MASK) == 0;
+
+  assert(intr_disabled());
+
+  if (code == EXC_INTR && kernel_mode) {
+    mips_intr_handler(frame);
+    return;
+  }
 
   exc_handler_t handler =
-    (kernel ? kernel_exception_table : user_exception_table)[exc_code(frame)];
+    (kernel_mode ? kernel_exception_table : user_exception_table)[code];
 
   if (!handler)
     kernel_oops(frame);
 
   /* TODO If `handler` is not hardware interrupt handler, then it should be
    * called with interrupts enabled. Preemption state should not be altered. */
-  (*handler)(frame);
+  if (code == EXC_SYS) {
+    /* Handle system calls with interrupts enabled! */
+    intr_enable();
+    (*handler)(frame);
+    intr_disable();
+  } else {
+    (*handler)(frame);
+  }
 
   exc_before_leave(frame);
+
+  assert(intr_disabled());
 }

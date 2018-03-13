@@ -89,6 +89,12 @@ user_exc_enter:
         # No exeception frame so set td_kframe to NULL.
         sw      $0, TD_KFRAME(t0)
 
+        # Increment interrupt nest level.
+        move    s0, t0
+        lw      t0, TD_IDNEST(s0)
+        addi    t0, 1
+        sw      t0, TD_IDNEST(s0)
+
         # Turn off FPU, enter kernel mode,
         # drop exception level and disable interrupts.
         mfc0    t0, C0_STATUS
@@ -101,9 +107,16 @@ user_exc_enter:
         jalr    k1
         nop
 
+        # Decrement interrupt nest level.
+        lw      t0, TD_IDNEST(s0)
+        addi    t0, -1
+        sw      t0, TD_IDNEST(s0)
+
 user_exc_leave:
-        # Disable interrupts and fetch C0_STATUS.
-        di      t0
+        # Enter exception level (disable interrupts till ERET).
+        mfc0    t0, C0_STATUS
+        ori     t0, SR_EXL
+        mtc0    t0, C0_STATUS
 
         # Fetch the context from thread control block.
         LOAD_PCPU(k0)
@@ -234,10 +247,21 @@ kern_exc_enter:
         lw      t0, PCPU_CURTHREAD(t0)
         sw      sp, TD_KFRAME(t0)
 
+        # Increment interrupt nest level.
+        move    s0, t0
+        lw      t0, TD_IDNEST(s0)
+        addi    t0, 1
+        sw      t0, TD_IDNEST(s0)
+
         # Call C interrupt handler routine.
         move    a0, sp
         jalr    k1
         nop
+
+        # Decrement interrupt nest level.
+        lw      t0, TD_IDNEST(s0)
+        addi    t0, -1
+        sw      t0, TD_IDNEST(s0)
 
 kern_exc_leave:
         # Enter exception level (disable interrupts till ERET).
