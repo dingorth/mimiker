@@ -3,6 +3,7 @@
 
 #include <common.h>
 #include <device.h>
+#include <rman.h>
 
 typedef struct resource resource_t;
 typedef struct bus_space bus_space_t;
@@ -110,9 +111,14 @@ typedef void (*bus_intr_setup_t)(device_t *dev, unsigned num,
                                  intr_handler_t *handler);
 typedef void (*bus_intr_teardown_t)(device_t *dev, intr_handler_t *handler);
 
+// should return resource*
+typedef struct r_resource* (*bus_resource_alloc_t)(device_t *dev, int type, int *rid,
+  rman_res_t start, rman_res_t end, rman_res_t count, uint32_t flags);
+
 struct bus_methods {
   bus_intr_setup_t intr_setup;
   bus_intr_teardown_t intr_teardown;
+  bus_resource_alloc_t resource_alloc;
 };
 
 struct bus_driver {
@@ -133,4 +139,4 @@ static inline void bus_intr_teardown(device_t *dev, intr_handler_t *handler) {
 
 int bus_generic_probe(device_t *bus);
 
-#endif
+#endif /* _SYS_BUS_H_ */

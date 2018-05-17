@@ -311,6 +311,8 @@ static int gt_pci_attach(device_t *pcib) {
   pcib->bus = DEV_BUS_PCI;
 
   // wykroj z rmana odpowiednie części pamięci.
+  // jakoś generycznie
+  // bus_alloc_resource(pcib, )
 
   gtpci->pci_bus.mem_space = &gt_pci_memory;
   gtpci->pci_bus.io_space = &gt_pci_ioports;

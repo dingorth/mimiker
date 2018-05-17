@@ -23,6 +23,14 @@ static void rootdev_intr_teardown(device_t *dev, intr_handler_t *handler) {
   mips_intr_teardown(handler);
 }
 
+// should return resource*
+static struct r_resource* rootdev_resource_alloc(device_t *dev, int type, int *rid,
+  rman_res_t start, rman_res_t end, rman_res_t count, uint32_t flags){
+    
+  struct r_resource *r = NULL;
+  return r;
+}
+
 extern pci_bus_driver_t gt_pci_bus;
 device_t *gt_pci;
 
@@ -33,12 +41,21 @@ static int rootdev_attach(device_t *dev) {
   // rman all physical resoursec
   // rman MEM
   // rman IRQ
-  rman_init(&rman_mem);
-  rman_init(&rman_irq);
+  rman_irq.rm_start = 0;
+  rman_irq.rm_end = NUM_MIPS_IRQS - 1;
+  rman_irq.desc = "Hardware IRQs";
+  if(rman_init(&rman_irq) != 0 ||
+    rman_manage_region(&rman_irq, 0, NUM_MIPS_IRQS - 1) != 0){
+    panic("rman_irq");
+  }
 
-  // init those rmans.
-  // create appropiate resources inside them
-  // irq's
+  rman_mem.rm_start = 0;
+  rman_mem.rm_end = BUS_SPACE_MAXADDR;
+  rman_mem.desc = "Memory addresses";
+  if(rman_init(&rman_mem) != 0 ||
+    rman_manage_region(&rman_mem, 0, BUS_SPACE_MAXADDR) != 0){
+    panic("rman_mem");
+  }
 
 
   gt_pci = device_add_child(dev);
@@ -57,7 +74,9 @@ static bus_driver_t rootdev_driver = {
     },
   .bus =
     {
-      .intr_setup = rootdev_intr_setup, .intr_teardown = rootdev_intr_teardown,
+      .intr_setup = rootdev_intr_setup, 
+      .intr_teardown = rootdev_intr_teardown,
+      .resource_alloc = rootdev_resource_alloc
     }};
 
 static device_t rootdev = (device_t){

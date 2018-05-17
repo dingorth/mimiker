@@ -61,6 +61,9 @@ void platform_init(int argc, char **argv, char **envp, unsigned memsize);
  *   15      Secondary IDE     PIIX4
  */
 
+#define NUM_MIPS_IRQS   6 /* maybe should be in mips.h?? */
+#define BUS_SPACE_MAXADDR 0xffffffff
+
 #define MALTA_PHYS_SDRAM_BASE 0x00000000
 
 #define MALTA_PCI0_MEMORY_BASE 0x10000000

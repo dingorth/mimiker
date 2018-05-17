@@ -3,13 +3,20 @@
 
 #include <common.h>
 #include <queue.h>
-#include <bus.h>
+#include <device.h>
+#include <mutex.h>
 
 // rman is purely kernel-side structure for now
+
+// static MALLOC_DECLARE(M_RMAN);
 
 typedef struct rman rman_t;
 typedef TAILQ_HEAD(, rman) rman_list_t;
 typedef uint32_t rman_res_t;
+
+struct r_resource {
+
+};
 
 struct rman {
     TAILQ_HEAD(, resource) rm_rs;   /* list of resources */

@@ -10,3 +10,8 @@ int rman_init(rman_t *rman){
 
     return 0;
 }
+
+int rman_manage_region(rman_t *rman, rman_res_t start, rman_res_t end){
+
+    return 0;
+}
