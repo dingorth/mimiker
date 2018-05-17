@@ -77,6 +77,8 @@ void pci_bus_enumerate(device_t *pcib) {
 
         size = -size;
         resource_t *bar = &pcid->bar[pcid->nbars++];
+
+        // dodaj znalezione bary danego urządzenia do rmana
         *bar = (resource_t){.r_owner = dev,
                             .r_type = type,
                             .r_flags = flags,
@@ -99,6 +101,8 @@ static int pci_bar_compare(const void *a, const void *b) {
   return 0;
 }
 
+
+// TUTAJ POKOMBINOWAĆ Z RMANEM
 void pci_bus_assign_space(device_t *pcib) {
   /* Count PCI base address registers & allocate memory */
   unsigned nbars = 0, ndevs = 0;

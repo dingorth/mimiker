@@ -162,6 +162,14 @@ static bus_space_t gt_pci_bus_space = {.read_1 = gt_pci_read_1,
                                        .read_region_1 = gt_pci_read_region_1,
                                        .write_region_1 = gt_pci_write_region_1};
 
+// nie będziemy tego potrzebowali tutaj zahardcodowanego (chyba)
+// weźmiemy to z rman'a rootdev'aa
+// możliwe, że będziemy chcieli mieć coś a'la
+// static struct rman gt64120 albo gt_pci;
+// w tym rmanie będą te trzy resource'y
+
+// chcemy jeszcze IRQ
+
 static resource_t gt_pci_memory = {.r_bus_space = &gt_pci_bus_space,
                                    .r_type = RT_MEMORY,
                                    .r_start = MALTA_PCI0_MEMORY_BASE,
@@ -176,6 +184,9 @@ static resource_t gt_pci_corectrl = {.r_bus_space = &gt_pci_bus_space,
                                      .r_type = RT_IOPORTS,
                                      .r_start = MALTA_CORECTRL_BASE,
                                      .r_end = MALTA_CORECTRL_BASE + 0x1000};
+
+
+
 
 static void gt_pci_set_icus(gt_pci_state_t *gtpci) {
   /* Enable the cascade IRQ (2) if 8-15 is enabled. */
@@ -298,6 +309,8 @@ static int gt_pci_attach(device_t *pcib) {
   gt_pci_state_t *gtpci = pcib->state;
 
   pcib->bus = DEV_BUS_PCI;
+
+  // wykroj z rmana odpowiednie części pamięci.
 
   gtpci->pci_bus.mem_space = &gt_pci_memory;
   gtpci->pci_bus.io_space = &gt_pci_ioports;

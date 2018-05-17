@@ -6,6 +6,7 @@
 #include <exception.h>
 #include <pci.h>
 #include <sysinit.h>
+#include <rman.h>
 
 typedef struct rootdev { void *data; } rootdev_t;
 
@@ -25,7 +26,21 @@ static void rootdev_intr_teardown(device_t *dev, intr_handler_t *handler) {
 extern pci_bus_driver_t gt_pci_bus;
 device_t *gt_pci;
 
+static struct rman rman_mem;
+static struct rman rman_irq;
+
 static int rootdev_attach(device_t *dev) {
+  // rman all physical resoursec
+  // rman MEM
+  // rman IRQ
+  rman_init(&rman_mem);
+  rman_init(&rman_irq);
+
+  // init those rmans.
+  // create appropiate resources inside them
+  // irq's
+
+
   gt_pci = device_add_child(dev);
   gt_pci->driver = &gt_pci_bus.driver;
   if (device_probe(gt_pci))
