@@ -128,13 +128,18 @@ struct bus_driver {
 
 #define BUS_DRIVER(dev) ((bus_driver_t *)((dev)->parent->driver))
 
-static inline void bus_intr_setup(device_t *dev, unsigned num,
+static inline void  bus_intr_setup(device_t *dev, unsigned num,
                                   intr_handler_t *handler) {
   BUS_DRIVER(dev)->bus.intr_setup(dev, num, handler);
 }
 
 static inline void bus_intr_teardown(device_t *dev, intr_handler_t *handler) {
   BUS_DRIVER(dev)->bus.intr_teardown(dev, handler);
+}
+
+static inline struct r_resource* __attribute__((__unused__)) bus_resource_alloc(device_t *dev, int type, int *rid,
+  rman_res_t start, rman_res_t end, rman_res_t count, uint32_t flags){
+    return BUS_DRIVER(dev)->bus.resource_alloc(dev, type, rid, start, end, count, flags);
 }
 
 int bus_generic_probe(device_t *bus);

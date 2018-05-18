@@ -27,6 +27,8 @@ static void rootdev_intr_teardown(device_t *dev, intr_handler_t *handler) {
 static struct r_resource* rootdev_resource_alloc(device_t *dev, int type, int *rid,
   rman_res_t start, rman_res_t end, rman_res_t count, uint32_t flags){
     
+    // use rman here!
+
   struct r_resource *r = NULL;
   return r;
 }

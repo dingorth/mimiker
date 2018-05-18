@@ -12,6 +12,7 @@
 #include <spinlock.h>
 #include <stdc.h>
 #include <klog.h>
+#include <rman.h>
 
 #define PCI0_CFG_REG_SHIFT 2
 #define PCI0_CFG_FUNCT_SHIFT 8
@@ -313,6 +314,7 @@ static int gt_pci_attach(device_t *pcib) {
   // wykroj z rmana odpowiednie części pamięci.
   // jakoś generycznie
   // bus_alloc_resource(pcib, )
+  // może też wyciąć ISA
 
   gtpci->pci_bus.mem_space = &gt_pci_memory;
   gtpci->pci_bus.io_space = &gt_pci_ioports;
@@ -359,6 +361,14 @@ static int gt_pci_attach(device_t *pcib) {
   return bus_generic_probe(pcib);
 }
 
+static struct r_resource* gt_pci_resource_alloc(device_t *dev, int type, int *rid,
+  rman_res_t start, rman_res_t end, rman_res_t count, uint32_t flags){
+
+    // use rman here!
+    struct r_resource *r = NULL;
+    return r;
+}
+
 pci_bus_driver_t gt_pci_bus = {
   .driver =
     {
@@ -368,7 +378,9 @@ pci_bus_driver_t gt_pci_bus = {
     },
   .bus =
     {
-      .intr_setup = gt_pci_intr_setup, .intr_teardown = gt_pci_intr_teardown,
+      .intr_setup = gt_pci_intr_setup, 
+      .intr_teardown = gt_pci_intr_teardown,
+      .resource_alloc = gt_pci_resource_alloc
     },
   .pci_bus =
     {

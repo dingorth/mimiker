@@ -165,12 +165,14 @@ static int stdvga_attach(device_t *dev) {
 
   /* TODO: Enabling PCI regions should probably be performed by PCI bus resource
    * reservation code. */
+  // here
   uint16_t command = pci_read_config(dev, PCIR_COMMAND, 2);
   command |= PCIM_CMD_PORTEN | PCIM_CMD_MEMEN;
   pci_write_config(dev, PCIR_COMMAND, 2, command);
 
   stdvga_state_t *stdvga = dev->state;
   /* TODO: This will get replaced by bus_alloc_resource* function */
+  // here
   stdvga->mem = &pcid->bar[0];
   stdvga->io = &pcid->bar[1];
 
