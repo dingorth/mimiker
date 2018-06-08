@@ -7,6 +7,7 @@
 #include <timer.h>
 #include <spinlock.h>
 #include <sysinit.h>
+#include <stdc.h>
 
 typedef struct pit_state {
   resource_t *regs;
@@ -60,11 +61,11 @@ static int timer_pit_stop(timer_t *tm) {
 }
 
 static int pit_attach(device_t *dev) {
-  assert(dev->parent->bus == DEV_BUS_PCI);
+  assert(dev->parent->bus == DEV_BUS_ISA);
 
   pit_state_t *pit = dev->state;
 
-  pit->regs = bus_resource_alloc_anywhere(dev, RT_ISA, 0, 0, RF_SHARED);
+  pit->regs = bus_resource_alloc_anywhere(dev, RT_IOPORTS, 0, 0, RF_SHARED);
 
   pit->lock = SPINLOCK_INITIALIZER();
   pit->intr_handler = INTR_HANDLER_INIT(pit_intr, NULL, pit, "i8254 timer", 0);
@@ -85,10 +86,20 @@ static int pit_attach(device_t *dev) {
   return 0;
 }
 
+static int pit_probe(device_t *dev){
+  if(dev->desc && strcmp(dev->desc, "pit") == 0)
+    return 1;
+  return 0;
+}
+
 static driver_t pit_driver = {
-  .desc = "i8254 PIT driver", .size = sizeof(pit_state_t), .attach = pit_attach,
+  .desc = "i8254 PIT driver", 
+  .size = sizeof(pit_state_t), 
+  .attach = pit_attach,
+  .probe = pit_probe
 };
 
+#if 0
 extern device_t *gt_pci;
 
 static void pit_init(void) {
@@ -96,3 +107,6 @@ static void pit_init(void) {
 }
 
 SYSINIT_ADD(pit, pit_init, DEPS("rootdev"));
+#endif
+
+DRIVER_ADD(pit_driver);

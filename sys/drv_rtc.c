@@ -86,11 +86,11 @@ static vnodeops_t rtc_time_vnodeops = {.v_open = vnode_open_generic,
                                        .v_read = rtc_time_read};
 
 static int rtc_attach(device_t *dev) {
-  assert(dev->parent->bus == DEV_BUS_PCI);
+  assert(dev->parent->bus == DEV_BUS_ISA);
 
   rtc_state_t *rtc = dev->state;
 
-  rtc->regs = bus_resource_alloc_anywhere(dev, RT_ISA, 0, 0, RF_SHARED);
+  rtc->regs = bus_resource_alloc_anywhere(dev, RT_IOPORTS, 0, 0, RF_SHARED);
 
   rtc->intr_handler =
     INTR_HANDLER_INIT(rtc_intr, NULL, rtc, "RTC periodic timer", 0);
@@ -109,12 +109,20 @@ static int rtc_attach(device_t *dev) {
   return 0;
 }
 
+static int rtc_probe(device_t *dev){
+  if(dev->desc && strcmp(dev->desc, "rtc") == 0)
+    return 1;
+  return 0;
+}
+
 static driver_t rtc_driver = {
   .desc = "MC146818 RTC driver",
   .size = sizeof(rtc_state_t),
   .attach = rtc_attach,
+  .probe = rtc_probe
 };
 
+#if 0
 extern device_t *gt_pci;
 
 static void rtc_init(void) {
@@ -123,3 +131,5 @@ static void rtc_init(void) {
 }
 
 SYSINIT_ADD(rtc, rtc_init, DEPS("rootdev"));
+#endif
+DRIVER_ADD(rtc_driver);

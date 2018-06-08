@@ -17,7 +17,8 @@ SOURCES_C = atomic.c \
 	    signal.c \
 	    timer.c \
 	    tlb.c \
-	    uart_cbus.c
+	    uart_cbus.c \
+		isa.c
 
 SOURCES_ASM = boot.S copy.S exc.S switch.S ebase.S
 

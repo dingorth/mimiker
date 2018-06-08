@@ -37,6 +37,7 @@ struct device {
   resource_list_t resources; /* head of resources belonging to this device */
 
   /* Device information and state. */
+  char *desc; 
   device_bus_t bus;
   driver_t *driver;
   void *instance; /* used by bus driver to store data in children */

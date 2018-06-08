@@ -27,4 +27,4 @@ static void clock_init(void) {
   ticks = tv2st(get_uptime());
 }
 
-SYSINIT_ADD(clock, clock_init, DEPS("sched", "callout", "pit"));
+SYSINIT_ADD(clock, clock_init, DEPS("sched", "callout", "rootdev"));

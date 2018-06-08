@@ -299,7 +299,7 @@ static int gt_pci_attach(device_t *pcib) {
                        MALTA_CORECTRL_END - MALTA_CORECTRL_BASE + 1, 0);
   gtpci->isa_io = bus_resource_alloc(
     pcib, 0, 0, MALTA_PCI0_TO_ISA_BRIDGE_BASE, MALTA_PCI0_TO_ISA_BRIDGE_END,
-    MALTA_PCI0_TO_ISA_BRIDGE_END - MALTA_PCI0_TO_ISA_BRIDGE_BASE + 1, 0);
+    MALTA_PCI0_TO_ISA_BRIDGE_END - MALTA_PCI0_TO_ISA_BRIDGE_BASE + 1, RF_SHARED);
 
   if (gtpci->corectrl == NULL || gtpci->pci_mem == NULL ||
       gtpci->pci_io == NULL || gtpci->isa_io == NULL) {
@@ -346,6 +346,9 @@ static int gt_pci_attach(device_t *pcib) {
   gt_pci_intr_chain_init(gtpci, 14, "ide(0)"); /* IDE primary */
   gt_pci_intr_chain_init(gtpci, 15, "ide(1)"); /* IDE secondary */
 
+  device_t *dev = device_add_child(pcib);
+  dev->desc = "isa";
+
   pci_bus_enumerate(pcib);
 
   gtpci->intr_handler =
@@ -353,7 +356,7 @@ static int gt_pci_attach(device_t *pcib) {
   bus_intr_setup(pcib, MIPS_HWINT0, &gtpci->intr_handler);
 
   int error = bus_generic_probe(pcib);
-  pci_bus_dump(pcib);
+  // pci_bus_dump(pcib);
   return error;
 }
 
@@ -369,9 +372,14 @@ static resource_t *gt_pci_resource_alloc(device_t *pcib, device_t *dev,
     r = rman_allocate_resource(&gtpci->rman_pci_memspace, start, end, size,
                                size, RF_NONE | flags);
 
-  if (type & RT_IOPORTS)
-    r = rman_allocate_resource(&gtpci->rman_pci_iospace, start, end, size, size,
+  if (type & RT_IOPORTS){
+    if(dev->parent->bus == DEV_BUS_ISA){
+      return gtpci->isa_io;
+    } else{
+      r = rman_allocate_resource(&gtpci->rman_pci_iospace, start, end, size, size,
                                RF_NONE | flags);
+    }
+  }
 
   /* Hack to directly return ISAB resource. Need to implement PCI-ISA bridge */
   if (type & RT_ISA)

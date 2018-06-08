@@ -117,9 +117,15 @@ static intr_filter_t atkbdc_intr(void *data) {
 }
 
 static int atkbdc_probe(device_t *dev) {
-  assert(dev->parent->bus == DEV_BUS_PCI);
+  
+  if(!dev->desc || strcmp(dev->desc, "atkbdc") != 0)
+    return 0;
+
+  
   resource_t *regs =
-    bus_resource_alloc_anywhere(dev, RT_ISA, 0, 0, RF_SHARED);
+    bus_resource_alloc_anywhere(dev, RT_IOPORTS, 0, 0, RF_SHARED);
+
+  assert(regs);
 
   if (!kbd_reset(regs)) {
     klog("Keyboard self-test failed.");
@@ -141,7 +147,7 @@ static int atkbdc_probe(device_t *dev) {
 }
 
 static int atkbdc_attach(device_t *dev) {
-  assert(dev->parent->bus == DEV_BUS_PCI);
+  assert(dev->parent->bus == DEV_BUS_ISA);
 
   atkbdc_state_t *atkbdc = dev->state;
 
@@ -173,6 +179,7 @@ static driver_t atkbdc_driver = {
   .attach = atkbdc_attach,
 };
 
+#if 0
 extern device_t *gt_pci;
 
 static void atkbdc_init(void) {
@@ -181,3 +188,6 @@ static void atkbdc_init(void) {
 }
 
 SYSINIT_ADD(atkbdc, atkbdc_init, DEPS("rootdev"));
+#endif
+
+DRIVER_ADD(atkbdc_driver);
