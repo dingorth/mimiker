@@ -33,6 +33,7 @@ static void build_queue(sysinit_tailq_t *head) {
     char **deps = p->deps;
     while (*deps) {
       sysinit_entry_t *dependency = find(*deps);
+      assert(dependency != NULL);
       dependency->dependants--;
       if (dependency->dependants == 0)
         TAILQ_INSERT_HEAD(head, dependency, entries);
