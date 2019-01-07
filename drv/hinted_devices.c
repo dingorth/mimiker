@@ -1,17 +1,28 @@
 #include <device.h>
-#include "device_hints.h"
+#include <mips/malta-devhint.c>
+#include <stdc.h>
+#include <bus.h>
+
 
 const char* construct_device_path(device_t *dev) {
-    // TODO
+    // XXX: https://github.com/cahirwpz/mimiker/pull/491/ introduces
+    // name and unit fields for device
     return "/";
+}
+
+bool starts_with(const char* str, const char* prefix) {
+    size_t prefix_len = strlen(prefix);
+    return strncmp(prefix, str, prefix_len);
 }
 
 void bus_enumerate_hinted_children(device_t *bus) {
     const char* bus_path = construct_device_path(bus);
+    size_t hints_len = sizeof(malta_hints) / sizeof(device_t);
 
-    // TODO: C ain't no python
-    for hint in filter(lambda hint: hint.path.startswith(bus_path), hints) {
-        bus_hinted_child(bus, hint);
+    for (int i=0; i<hints_len; i++) {
+        if (!starts_with(malta_hints[i].path, bus_path))
+            continue;
+        bus_hinted_child(bus, &malta_hints[i]);
     }
 }
 
