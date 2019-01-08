@@ -22,7 +22,8 @@
 // DEVICES:
 
   // system controller a.k.a. PCI Host Controller
-  pcihc@0 {
+  gt64120: pcihc@0 {
+      compatible = "simple-bus";
 
         cbus@0 {
             uart0: serial@xxx {
@@ -72,6 +73,10 @@
                     };
 
                     atkbdc0: atkbdc@xxx {
+
+                    };
+
+                    pit0: pit@43 {
 
                     };
 
