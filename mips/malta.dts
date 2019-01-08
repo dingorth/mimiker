@@ -1,17 +1,14 @@
 /dts-v1/;
 
-// device tree: https://www.youtube.com/watch?v=m_NyYEBxfn8
-// brief HW description in chapter 4 of MIPS Malta-R Development Platform User’s Manual
-
 / {
     model = "MIPS Malta-R";
     compatible = "mti,malta";
 
-	cpus {
-		cpu@0 {
-			compatible = "mti,mips14KEc", "mti,mips14Kc";
-		};
-	};
+	  cpus {
+		    cpu@0 {
+			      compatible = "mti,mips14KEc", "mti,mips14Kc";
+		    };
+	  };
 
     memory {
         device_type = "memory";
@@ -19,71 +16,37 @@
     };
 
 
-// DEVICES:
+    isa0: isa@1000 {
+        compatible = "isa";
+        #address-cells = <1>;
+        #size-cells = <1>;
 
-  // system controller a.k.a. PCI Host Controller
-  gt64120: pcihc@0 {
-      compatible = "simple-bus";
+        uart0: serial@3f8 {
+            compatible = "ns16550a";
+            reg = <0x3f8 0x40>;
+        };
 
-        cbus@0 {
-            uart0: serial@xxx {
-                compatible = "ns16550a";
+        uart1: serial@2f8 {
+            compatible = "ns16550a";
+            reg = <0x2f8 0x40>;
+        };
 
-            }
-        }
+        rtc0: rtc@70 {
+            compatible = "rtc";
+            reg = <0x70 0x10>;
+        };
 
-        pci@0 {
+        atkbdc0: atkbdc@60 {
+            compatible = "atkbdc";
+            reg = <0x60 0x8>;
+        };
 
-// PIIX4 internal registers are organized into four functions—ISA Bridge with integrated AT compatibility logic,
-// IDE Controller, USB Host Controller, and Enhanced Power Management. Each function has its registers
-// divided into one set of PCI Configuration Registers and one or more register sets located in system IO space.
+        pit0: pit@40 {
+            compatible = "pit";
+            reg = <0x40 0x10>;
+        };
 
-            // pci-isa bridge
-            isab@0 {
-                   
+    };
 
-                isa: isa@1000 {
-		                compatible = "isa";
-		                //#address-cells = <2>;
-		                //#size-cells = <1>;
-		                //ranges = <1 0 0 0x1000>;
-
-		                uart0: serial@3f8 {
-			                  compatible = "ns16550a";
-
-			                  reg = <1 0x3f8 0x40>;
-			                  reg-shift = <0>;
-
-			                  clock-frequency = <1843200>;
-
-		                };
-
-                    uart1: serial@2f8 {
-			                  compatible = "ns16550a";
-
-			                  reg = <1 0x2f8 0x40>;
-			                  reg-shift = <0>;
-
-			                  clock-frequency = <1843200>;
-
-                    };
-
-                    rtc0: rtc@70 {
-
-                    };
-
-                    atkbdc0: atkbdc@xxx {
-
-                    };
-
-                    pit0: pit@43 {
-
-                    };
-
-                    
-	              }; // isa@0
-            }; // isab@0
-        }; // pci@0
-    }; // pcihc@0
-}; // /
+};
 
