@@ -4,10 +4,11 @@
 #include <bus.h>
 
 
-const char* construct_device_path(device_t *dev) {
-    // XXX: https://github.com/cahirwpz/mimiker/pull/491/ introduces
-    // name and unit fields for device
-    return "/";
+void construct_device_path(device_t *dev, char* buff, size_t buff_size) {
+    // TODO: https://github.com/cahirwpz/mimiker/pull/491/ introduces name and unit fields for device
+    if (dev == NULL) return;
+    snprintf((buff), buff_size, "%s%d/%s", dev->name, dev->unit, buff);
+    construct_device_path(dev->parent, buff, buff_size);
 }
 
 bool starts_with(const char* str, const char* prefix) {
@@ -16,16 +17,14 @@ bool starts_with(const char* str, const char* prefix) {
 }
 
 void bus_enumerate_hinted_children(device_t *bus) {
-    const char* bus_path = construct_device_path(bus);
-    size_t hints_len = sizeof(malta_hints) / sizeof(device_t);
+    char bus_path_buff[256]; // TODO: Is the size good?
+    construct_device_path(bus, bus_path_buff, 256);
+    size_t hints_len = sizeof(malta_hints) / sizeof(devhint_t);
 
-    for (int i=0; i<hints_len; i++) {
-        if (!starts_with(malta_hints[i].path, bus_path))
-            continue;
-        bus_hinted_child(bus, &malta_hints[i]);
-    }
+    for (int i=0; i<hints_len; i++)
+        if (starts_with(malta_hints[i].path, bus_path_buff))
+            bus_hinted_child(bus, &malta_hints[i]);
 }
-
 
 static void generic_hinted_child(device_t *bus, devhint_t *devhint) {
     // TODO: include devhint_t
