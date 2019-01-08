@@ -12,7 +12,7 @@
 
     memory {
         device_type = "memory";
-        reg = <0x0, 0x8000000>; // 256M
+        reg = <0x0 0x8000000>;
     };
 
 
