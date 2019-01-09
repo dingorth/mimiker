@@ -21,6 +21,8 @@
 #include <turnstile.h>
 #include <vm_map.h>
 
+#include <ofw.h>
+
 extern int kernel_init(int argc, char **argv);
 
 static struct {
@@ -179,6 +181,7 @@ void platform_init(int argc, char **argv, char **envp, unsigned memsize) {
   sleepq_init();
   turnstile_init();
   thread_bootstrap();
+  check_fdt_header();
 
   klog("Switching to 'kernel-main' thread...");
 }

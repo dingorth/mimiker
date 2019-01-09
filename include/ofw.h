@@ -1,66 +1,7 @@
-/*	$NetBSD: openfirm.h,v 1.1 1998/05/15 10:16:00 tsubai Exp $	*/
+#ifndef _FDT_H_
+#define _FDT_H_
 
-/*-
- *  * SPDX-License-Identifier: BSD-4-Clause
- *   *
- *    * Copyright (C) 1995, 1996 Wolfgang Solfrank.
- *     * Copyright (C) 1995, 1996 TooLs GmbH.
- *      * All rights reserved.
- *       *
- *        * Redistribution and use in source and binary forms, with or without
- *         * modification, are permitted provided that the following conditions
- *          * are met:
- *           * 1. Redistributions of source code must retain the above copyright
- *            *    notice, this list of conditions and the following disclaimer.
- *             * 2. Redistributions in binary form must reproduce the above copyright
- *              *    notice, this list of conditions and the following disclaimer in the
- *               *    documentation and/or other materials provided with the distribution.
- *                * 3. All advertising materials mentioning features or use of this software
- *                 *    must display the following acknowledgement:
- *                  *	This product includes software developed by TooLs GmbH.
- *                   * 4. The name of TooLs GmbH may not be used to endorse or promote products
- *                    *    derived from this software without specific prior written permission.
- *                     *
- *                      * THIS SOFTWARE IS PROVIDED BY TOOLS GMBH ``AS IS'' AND ANY EXPRESS OR
- *                       * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- *                        * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- *                         * IN NO EVENT SHALL TOOLS GMBH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *                          * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- *                           * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- *                            * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- *                             * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- *                              * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- *                               * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *                                */
-/*
- *  * Copyright (C) 2000 Benno Rice.
- *   * All rights reserved.
- *    *
- *     * Redistribution and use in source and binary forms, with or without
- *      * modification, are permitted provided that the following conditions
- *       * are met:
- *        * 1. Redistributions of source code must retain the above copyright
- *         *    notice, this list of conditions and the following disclaimer.
- *          * 2. Redistributions in binary form must reproduce the above copyright
- *           *    notice, this list of conditions and the following disclaimer in the
- *            *    documentation and/or other materials provided with the distribution.
- *             *
- *              * THIS SOFTWARE IS PROVIDED BY Benno Rice ``AS IS'' AND ANY EXPRESS OR
- *               * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- *                * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- *                 * IN NO EVENT SHALL TOOLS GMBH BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- *                  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- *                   * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- *                    * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- *                     * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- *                      * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- *                       * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *                        *
- *                         * $FreeBSD: head/sys/dev/ofw/openfirm.h 332341 2018-04-09 22:06:16Z gonzo $
- *                          */
-
-#ifndef _DEV_OPENFIRM_H_
-#define _DEV_OPENFIRM_H_
+#include <common.h>
 
 /*
  *  * Prototypes for Open Firmware Interface Routines
@@ -70,32 +11,23 @@ typedef uint32_t	ihandle_t;
 typedef uint32_t	phandle_t;
 typedef uint32_t	pcell_t;
 
+typedef struct fdt_header {
+	 uint32_t magic;
+	 uint32_t totalsize;
+	 uint32_t off_dt_struct;
+	 uint32_t off_dt_strings;
+	 uint32_t off_mem_rsvmap;
+	 uint32_t version;
+	 uint32_t last_comp_version;
+	 uint32_t boot_cpuid_phys;
+	 uint32_t size_dt_strings;
+	 uint32_t size_dt_struct;
+} fdt_header_t;
 
-MALLOC_DECLARE(M_OFWPROP);
-// need to be definec in .c file
-
-/*
- *  * Open Firmware interface initialization.  OF_install installs the named
- *   * interface as the Open Firmware access mechanism, OF_init initializes it.
- *    */
-
-boolean_t	OF_install(char *name, int prio);
-int		OF_init(void *cookie);
-
-/*
- *  * Known Open Firmware interface names
- *   */
-
-#define	OFW_STD_DIRECT	"ofw_std"	/* Standard OF interface */
-#define	OFW_STD_REAL	"ofw_real"	/* Real-mode OF interface */
-#define	OFW_STD_32BIT	"ofw_32bit"	/* 32-bit OF interface */
-#define	OFW_FDT		"ofw_fdt"	/* Flattened Device Tree */
-
-/* Generic functions */
-int		OF_test(const char *name);
-void		OF_printf(const char *fmt, ...);
+void check_fdt_header(void);
 
 /* Device tree functions */
+/*
 phandle_t	OF_peer(phandle_t node);
 phandle_t	OF_child(phandle_t node);
 phandle_t	OF_parent(phandle_t node);
@@ -103,7 +35,7 @@ ssize_t		OF_getproplen(phandle_t node, const char *propname);
 ssize_t		OF_getprop(phandle_t node, const char *propname, void *buf,
 				    size_t len);
 ssize_t		OF_getencprop(phandle_t node, const char *prop, pcell_t *buf,
-				    size_t len); /* Same as getprop, but maintains endianness */
+				    size_t len);
 int		OF_hasprop(phandle_t node, const char *propname);
 ssize_t		OF_searchprop(phandle_t node, const char *propname, void *buf,
 				    size_t len);
@@ -125,6 +57,6 @@ int		OF_setprop(phandle_t node, const char *name, const void *buf,
 ssize_t		OF_canon(const char *path, char *buf, size_t len);
 phandle_t	OF_finddevice(const char *path);
 ssize_t		OF_package_to_path(phandle_t node, char *buf, size_t len);
+*/
 
-
-#endif /* _DEV_OPENFIRM_H_ *//
+#endif
