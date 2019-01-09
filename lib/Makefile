@@ -2,7 +2,7 @@
 
 TOPDIR = $(realpath ..)
 
-SUBDIR = libmimiker newlib libfdt
+SUBDIR = libmimiker newlib
 
 all: build
 
