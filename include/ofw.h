@@ -3,19 +3,50 @@
 
 #include <common.h>
 
+typedef uint16_t fdt16_t;
+typedef uint32_t fdt32_t;
+typedef uint64_t fdt64_t;
+
+#define EXTRACT_BYTE(x, n) ((unsigned long long)((uint8_t *)&x)[n])
+#define CPU_TO_FDT16(x) ((EXTRACT_BYTE(x, 0) << 8) | EXTRACT_BYTE(x, 1))
+#define CPU_TO_FDT32(x)                                                        \
+  ((EXTRACT_BYTE(x, 0) << 24) | (EXTRACT_BYTE(x, 1) << 16) |                   \
+   (EXTRACT_BYTE(x, 2) << 8) | EXTRACT_BYTE(x, 3))
+#define CPU_TO_FDT64(x)                                                        \
+  ((EXTRACT_BYTE(x, 0) << 56) | (EXTRACT_BYTE(x, 1) << 48) |                   \
+   (EXTRACT_BYTE(x, 2) << 40) | (EXTRACT_BYTE(x, 3) << 32) |                   \
+   (EXTRACT_BYTE(x, 4) << 24) | (EXTRACT_BYTE(x, 5) << 16) |                   \
+   (EXTRACT_BYTE(x, 6) << 8) | EXTRACT_BYTE(x, 7))
+
+static inline uint16_t fdt16_to_cpu(fdt16_t x) {
+  return (uint16_t)CPU_TO_FDT16(x);
+}
+static inline fdt16_t cpu_to_fdt16(uint16_t x) {
+  return (fdt16_t)CPU_TO_FDT16(x);
+}
+
+static inline uint32_t fdt32_to_cpu(fdt32_t x) {
+  return (uint32_t)CPU_TO_FDT32(x);
+}
+
+static inline fdt32_t cpu_to_fdt32(uint32_t x) {
+  return (fdt32_t)CPU_TO_FDT32(x);
+}
+
 #define FDT_MAGIC 0xd00dfeed
-  #define fdt_get_header(fdt, field) \
-  	(fdt32_to_cpu(((const struct fdt_header *)(fdt))->field))
-  #define fdt_magic(fdt)			(fdt_get_header(fdt, magic))
- #define fdt_totalsize(fdt)		(fdt_get_header(fdt, totalsize))
- #define fdt_off_dt_struct(fdt)		(fdt_get_header(fdt, off_dt_struct))
- #define fdt_off_dt_strings(fdt)		(fdt_get_header(fdt, off_dt_strings))
- #define fdt_off_mem_rsvmap(fdt)		(fdt_get_header(fdt, off_mem_rsvmap))
- #define fdt_version(fdt)		(fdt_get_header(fdt, version))
- #define fdt_last_comp_version(fdt)	(fdt_get_header(fdt, last_comp_version))
- #define fdt_boot_cpuid_phys(fdt)	(fdt_get_header(fdt, boot_cpuid_phys))
- #define fdt_size_dt_strings(fdt)	(fdt_get_header(fdt, size_dt_strings))
- #define fdt_size_dt_struct(fdt)		(fdt_get_header(fdt, size_dt_struct))
+
+#define fdt_get_header(fdt, field)                                             \
+  (fdt32_to_cpu(((const struct fdt_header *)(fdt))->field))
+#define fdt_magic(fdt) (fdt_get_header(fdt, magic))
+#define fdt_totalsize(fdt) (fdt_get_header(fdt, totalsize))
+#define fdt_off_dt_struct(fdt) (fdt_get_header(fdt, off_dt_struct))
+#define fdt_off_dt_strings(fdt) (fdt_get_header(fdt, off_dt_strings))
+#define fdt_off_mem_rsvmap(fdt) (fdt_get_header(fdt, off_mem_rsvmap))
+#define fdt_version(fdt) (fdt_get_header(fdt, version))
+#define fdt_last_comp_version(fdt) (fdt_get_header(fdt, last_comp_version))
+#define fdt_boot_cpuid_phys(fdt) (fdt_get_header(fdt, boot_cpuid_phys))
+#define fdt_size_dt_strings(fdt) (fdt_get_header(fdt, size_dt_strings))
+#define fdt_size_dt_struct(fdt) (fdt_get_header(fdt, size_dt_struct))
 
 /*
  *  * Prototypes for Open Firmware Interface Routines
