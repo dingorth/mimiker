@@ -37,7 +37,9 @@ class Launchable:
     def start(self):
         if self.cmd is None:
             return
+        print("spawning {}".format(self.name))
         on_spawn = set_as_tty_foreground if self.needs_foreground else None
+        print("{} {}".format(self.cmd, ' '.join(self.options)))
         self.process = subprocess.Popen([self.cmd] + self.options,
                                         start_new_session=False,
                                         preexec_fn=on_spawn)
@@ -86,7 +88,7 @@ def wait_any(launchables):
     for l in itertools.cycle(launchables):
         try:
             if l.wait(0.2):
-                # print(l.name + ' terminated')
+                print(l.name + ' terminated')
                 return
         except subprocess.TimeoutExpired:
             continue

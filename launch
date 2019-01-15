@@ -72,6 +72,8 @@ if __name__ == '__main__':
         raise SystemExit('ERROR: Unable to start both debugger and simulator '
                          'in stdio output mode.')
 
+    print(args)
+
     uart_port = UART_PORT_BASE + os.getuid()
     gdb_port = GDB_PORT_BASE + os.getuid()
 
@@ -100,6 +102,7 @@ if __name__ == '__main__':
     sim.start()
     out.start()
     dbg.start()
+
 
     # Wait until any of these program terminates. This way the user may end
     # their session by either closing the simulator, the debugger, or even the

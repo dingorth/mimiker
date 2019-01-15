@@ -1,7 +1,8 @@
 #include <ofw.h>
 
-extern fdt_header_t* __dtb_start;
+int fdt_check_header(const void *fdt) {
+  if (fdt_magic(fdt) != FDT_MAGIC)
+	panic("Wrong FDT_MAGIC!");
 
-void check_fdt_header(){
-	assert(__dtb_start->magic == 0xd00dfeedu);	
+  return 0;
 }

@@ -39,6 +39,7 @@ class UrxvtOutput(Launchable):
 
     def probe(self):
         self.cmd = shutil.which('urxvt')
+        print("probing urxvt")
         return self.cmd is not None
 
     def configure(self, **kwargs):
