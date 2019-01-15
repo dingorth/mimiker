@@ -33,6 +33,7 @@ SOURCES += string/strnlen.c
 SOURCES += string/strrchr.c
 SOURCES += string/strsep.c
 SOURCES += string/strspn.c
+SOURCES += string/memcmp.c
 
 # SOURCES += stdlib/wctomb.c
 # NOTE: wctomb IS needed by __format_parser, but it requires the whole

@@ -64,6 +64,7 @@ size_t strnlen(const char *str, size_t maxlen);
 char *strrchr(const char *s, int c);
 char *strsep(char **stringp, const char *delim);
 size_t strspn(const char *s1, const char *s2);
+int memcmp(const void *s1, const void *s2, size_t n);
 
 /* Write a formatted string to default console. */
 int kprintf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
