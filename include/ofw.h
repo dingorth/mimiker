@@ -33,8 +33,6 @@ static inline fdt32_t cpu_to_fdt32(uint32_t x) {
   return (fdt32_t)CPU_TO_FDT32(x);
 }
 
-#define FDT_MAGIC 0xd00dfeed
-
 #define fdt_get_header(fdt, field)                                             \
   (fdt32_to_cpu(((const struct fdt_header *)(fdt))->field))
 #define fdt_magic(fdt) (fdt_get_header(fdt, magic))
@@ -47,10 +45,6 @@ static inline fdt32_t cpu_to_fdt32(uint32_t x) {
 #define fdt_boot_cpuid_phys(fdt) (fdt_get_header(fdt, boot_cpuid_phys))
 #define fdt_size_dt_strings(fdt) (fdt_get_header(fdt, size_dt_strings))
 #define fdt_size_dt_struct(fdt) (fdt_get_header(fdt, size_dt_struct))
-
-/*
- *  * Prototypes for Open Firmware Interface Routines
- *   */
 
 typedef uint32_t ihandle_t;
 typedef uint32_t phandle_t;
@@ -70,11 +64,39 @@ typedef struct fdt_header {
 } fdt_header_t;
 
 typedef struct fdt_reserve_entry {
-  uint64_t address;
-  uint64_t size;
+  fdt64_t address;
+  fdt64_t size;
 } fdt_reserve_entry_t;
 
+typedef struct fdt_node_header {
+  fdt32_t tag;
+  char name[0];
+} fdt_node_header_t;
+
+typedef struct fdt_property {
+  fdt32_t tag;
+  fdt32_t len;
+  fdt32_t nameoff;
+  char data[0];
+} fdt_property_t;
+
 int fdt_check_header(const void *fdt);
+#define FDT_MAGIC	0xd00dfeed	/* 4: version, 4: total size */
+#define FDT_TAGSIZE	sizeof(fdt32_t)
+
+#define FDT_BEGIN_NODE	0x1		/* Start node: full name */
+#define FDT_END_NODE	0x2		/* End node */
+#define FDT_PROP	0x3		/* Property: name off,
+                           101  					   size, content */
+#define FDT_NOP		0x4		/* nop */
+#define FDT_END		0x9
+
+#define FDT_V1_SIZE	(7*sizeof(fdt32_t))
+#define FDT_V2_SIZE	(FDT_V1_SIZE + sizeof(fdt32_t))
+#define FDT_V3_SIZE	(FDT_V2_SIZE + sizeof(fdt32_t))
+#define FDT_V16_SIZE	FDT_V3_SIZE
+#define FDT_V17_SIZE	(FDT_V16_SIZE + sizeof(fdt32_t))
+
 
 /* Device tree functions */
 /*
