@@ -96,16 +96,16 @@ const char *fdt_get_string(const void *fdt, int stroffset, int *lenp)
 		if (stroffset < 0)
 			goto fail;
 		if (fdt_version(fdt) >= 17) {
-			if (stroffset >= fdt_size_dt_strings(fdt))
+			if ((uint32_t)stroffset >= fdt_size_dt_strings(fdt))
 				goto fail;
 			if ((fdt_size_dt_strings(fdt) - stroffset) < len)
 				len = fdt_size_dt_strings(fdt) - stroffset;
 		}
 	} else if (fdt_magic(fdt) == FDT_SW_MAGIC) {
 		if ((stroffset >= 0)
-		    || (stroffset < -fdt_size_dt_strings(fdt)))
+		    || ((uint32_t)stroffset < -fdt_size_dt_strings(fdt)))
 			goto fail;
-		if ((-stroffset) < len)
+		if ((-stroffset) < (int)len)
 			len = -stroffset;
 	} else {
 		err = -FDT_ERR_INTERNAL;
@@ -175,9 +175,9 @@ static const struct fdt_reserve_entry *fdt_mem_rsv(const void *fdt, int n)
 	int offset = n * sizeof(struct fdt_reserve_entry);
 	int absoffset = fdt_off_mem_rsvmap(fdt) + offset;
 
-	if (absoffset < fdt_off_mem_rsvmap(fdt))
+	if ((uint32_t)absoffset < fdt_off_mem_rsvmap(fdt))
 		return NULL;
-	if (absoffset > fdt_totalsize(fdt) - sizeof(struct fdt_reserve_entry))
+	if ((uint32_t)absoffset > fdt_totalsize(fdt) - sizeof(struct fdt_reserve_entry))
 		return NULL;
 	return fdt_mem_rsv_(fdt, n);
 }
@@ -682,7 +682,7 @@ int fdt_node_offset_by_phandle(const void *fdt, uint32_t phandle)
 {
 	int offset;
 
-	if ((phandle == 0) || (phandle == -1))
+	if ((phandle == 0) || ((int)phandle == -1))
 		return -FDT_ERR_BADPHANDLE;
 
 	FDT_RO_PROBE(fdt);

@@ -66,6 +66,8 @@ char *strsep(char **stringp, const char *delim);
 size_t strspn(const char *s1, const char *s2);
 int memcmp(const void *s1, const void *s2, size_t n);
 
+#define memmove memcpy
+
 /* Write a formatted string to default console. */
 int kprintf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 
