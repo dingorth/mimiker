@@ -189,18 +189,24 @@ void platform_init(int argc, char **argv, char **envp, unsigned memsize) {
   fdt_check_header(fdt);
   fdt_print_header_info(fdt);
 
-  char *name = (char*)fdt_get_name(fdt, 0, NULL);
+  char *name = (char *)fdt_get_name(fdt, 0, NULL);
   klog("name = %s", name);
 
   int nextoffset;
   int offset = 0;
-  for(int i=0; i<20; i++){
+  for (int i = 0; i < 20; i++) {
     uint32_t tag = fdt_next_tag(fdt, offset, &nextoffset);
     klog("tag = %ld at offset 0x%lx", tag, offset);
     klog("nextoffset = %lx", nextoffset);
-    if(tag == FDT_BEGIN_NODE){
-      name = (char*)fdt_get_name(fdt, offset, NULL);
+    if (tag == FDT_BEGIN_NODE) {
+      name = (char *)fdt_get_name(fdt, offset, NULL);
       klog("name = %s", name);
+    }
+    if(tag == FDT_PROP){
+      int len;
+      fdt_property_t *prop =
+        (fdt_property_t*)fdt_get_property_by_offset(fdt, offset, &len);
+      klog("prop tag = %d", prop->tag);
     }
     klog("-----");
     offset = nextoffset;

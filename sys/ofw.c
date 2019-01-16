@@ -126,3 +126,90 @@ uint32_t fdt_next_tag(const void *fdt, int startoffset, int *nextoffset) {
   *nextoffset = FDT_TAGALIGN(offset);
   return tag;
 }
+
+static int nextprop_(const void *fdt, int offset) {
+  uint32_t tag;
+  int nextoffset;
+
+  do {
+    tag = fdt_next_tag(fdt, offset, &nextoffset);
+
+    switch (tag) {
+      case FDT_END:
+        if (nextoffset >= 0)
+          return -FDT_ERR_BADSTRUCTURE;
+        else
+          return nextoffset;
+
+      case FDT_PROP:
+        return offset;
+    }
+    offset = nextoffset;
+  } while (tag == FDT_NOP);
+
+  return -FDT_ERR_NOTFOUND;
+}
+
+int fdt_check_prop_offset_(const void *fdt, int offset) {
+  if ((offset < 0) || (offset % FDT_TAGSIZE) ||
+      (fdt_next_tag(fdt, offset, &offset) != FDT_PROP))
+    return -FDT_ERR_BADOFFSET;
+
+  return offset;
+}
+
+int fdt_first_property_offset(const void *fdt, int nodeoffset) {
+  int offset;
+  if ((offset = fdt_check_node_offset_(fdt, nodeoffset)) < 0)
+    return offset;
+
+  return nextprop_(fdt, offset);
+}
+
+int fdt_check_node_offset_(const void *fdt, int offset) {
+  if ((offset < 0) || (offset % FDT_TAGSIZE) ||
+      (fdt_next_tag(fdt, offset, &offset) != FDT_BEGIN_NODE))
+    return -FDT_ERR_BADOFFSET;
+
+  return offset;
+}
+
+int fdt_next_property_offset(const void *fdt, int offset) {
+  if ((offset = fdt_check_prop_offset_(fdt, offset)) < 0)
+    return offset;
+
+  return nextprop_(fdt, offset);
+}
+
+static const struct fdt_property *
+fdt_get_property_by_offset_(const void *fdt, int offset, int *lenp) {
+  int err;
+  const struct fdt_property *prop;
+
+  if ((err = fdt_check_prop_offset_(fdt, offset)) < 0) {
+    if (lenp)
+      *lenp = err;
+    return NULL;
+  }
+
+  prop = fdt_offset_ptr_(fdt, offset);
+
+  if (lenp)
+    *lenp = fdt32_to_cpu(prop->len);
+
+  return prop;
+}
+
+const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
+                                                      int offset, int *lenp) {
+  /* Prior to version 16, properties may need realignment
+   * and this API does not work. fdt_getprop_*() will, however. */
+
+  if (fdt_version(fdt) < 0x10) {
+    if (lenp)
+      *lenp = -FDT_ERR_BADVERSION;
+    return NULL;
+  }
+
+  return fdt_get_property_by_offset_(fdt, offset, lenp);
+}
