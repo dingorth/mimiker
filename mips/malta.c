@@ -184,8 +184,27 @@ void platform_init(int argc, char **argv, char **envp, unsigned memsize) {
   turnstile_init();
   thread_bootstrap();
 
-  fdt_check_header(__dtb_start);
-  fdt_print_header_info(__dtb_start);
+  const void *fdt = (const void *)__dtb_start;
+
+  fdt_check_header(fdt);
+  fdt_print_header_info(fdt);
+
+  char *name = (char*)fdt_get_name(fdt, 0, NULL);
+  klog("name = %s", name);
+
+  int nextoffset;
+  int offset = 0;
+  for(int i=0; i<20; i++){
+    uint32_t tag = fdt_next_tag(fdt, offset, &nextoffset);
+    klog("tag = %ld at offset 0x%lx", tag, offset);
+    klog("nextoffset = %lx", nextoffset);
+    if(tag == FDT_BEGIN_NODE){
+      name = (char*)fdt_get_name(fdt, offset, NULL);
+      klog("name = %s", name);
+    }
+    klog("-----");
+    offset = nextoffset;
+  }
 
   klog("Switching to 'kernel-main' thread...");
 }
