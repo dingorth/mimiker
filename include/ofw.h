@@ -62,9 +62,9 @@ typedef struct fdt_property {
 #define FDT_ALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 #define FDT_TAGALIGN(x) (FDT_ALIGN((x), FDT_TAGSIZE))
 
-#define fdt_for_each_property_offset(property, fdt, node)                      \
-  for (property = fdt_first_property_offset(fdt, node); property >= 0;         \
-       property = fdt_next_property_offset(fdt, property))
+/* #define fdt_for_each_property_offset(property, fdt, node)                      \ */
+/*   for (property = fdt_first_property_offset(fdt, node); property >= 0;         \ */
+/*        property = fdt_next_property_offset(fdt, property)) */
 
 static inline uint16_t fdt16_to_cpu(fdt16_t x) {
   return (uint16_t)CPU_TO_FDT16(x);
