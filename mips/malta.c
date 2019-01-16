@@ -185,6 +185,7 @@ void platform_init(int argc, char **argv, char **envp, unsigned memsize) {
   thread_bootstrap();
 
   fdt_check_header(__dtb_start);
+  fdt_print_header_info(__dtb_start);
 
   klog("Switching to 'kernel-main' thread...");
 }
