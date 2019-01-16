@@ -212,12 +212,10 @@ const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
 const char *fdt_string(const void *fdt, int stroffset);
 const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
                                                       int offset, int *lenp);
-const struct fdt_property *fdt_get_property_namelen(const void *fdt,
-                                                    int offset,
+const struct fdt_property *fdt_get_property_namelen(const void *fdt, int offset,
                                                     const char *name,
                                                     int namelen, int *lenp);
-const struct fdt_property *fdt_get_property(const void *fdt,
-                                            int nodeoffset,
+const struct fdt_property *fdt_get_property(const void *fdt, int nodeoffset,
                                             const char *name, int *lenp);
 
 #endif
