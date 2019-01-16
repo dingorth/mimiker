@@ -2,6 +2,7 @@
 #define _FDT_H_
 
 #include <common.h>
+#include <stdc.h>
 
 typedef uint16_t fdt16_t;
 typedef uint32_t fdt32_t;
@@ -62,8 +63,8 @@ typedef struct fdt_property {
 #define FDT_ALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 #define FDT_TAGALIGN(x) (FDT_ALIGN((x), FDT_TAGSIZE))
 
-/* #define fdt_for_each_property_offset(property, fdt, node)                      \ */
-/*   for (property = fdt_first_property_offset(fdt, node); property >= 0;         \ */
+/* #define fdt_for_each_property_offset(property, fdt, node) \ */
+/*   for (property = fdt_first_property_offset(fdt, node); property >= 0; \ */
 /*        property = fdt_next_property_offset(fdt, property)) */
 
 static inline uint16_t fdt16_to_cpu(fdt16_t x) {
@@ -207,5 +208,16 @@ int fdt_next_property_offset(const void *fdt, int offset);
 int fdt_check_prop_offset_(const void *fdt, int offset);
 const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
                                                       int offset, int *lenp);
+
+const char *fdt_string(const void *fdt, int stroffset);
+const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
+                                                      int offset, int *lenp);
+const struct fdt_property *fdt_get_property_namelen(const void *fdt,
+                                                    int offset,
+                                                    const char *name,
+                                                    int namelen, int *lenp);
+const struct fdt_property *fdt_get_property(const void *fdt,
+                                            int nodeoffset,
+                                            const char *name, int *lenp);
 
 #endif

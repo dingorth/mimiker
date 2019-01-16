@@ -193,44 +193,40 @@ void platform_init(int argc, char **argv, char **envp, unsigned memsize) {
 
   int nextoffset;
   int offset = 0;
-  while(true) {
+  while (true) {
     uint32_t tag = fdt_next_tag(fdt, offset, &nextoffset);
     klog("tag = %ld at offset 0x%lx", tag, offset);
     klog("nextoffset = %lx", nextoffset);
-  switch(tag){
-    
-  case FDT_BEGIN_NODE:
-      klog("got tag FDT_BEGIN_NODE");
-      name = (char *)fdt_get_name(fdt, offset, NULL);
-      klog("name = %s", name);
-      break;
-  case FDT_PROP:
-      klog("got tag FDT_PROP");
-      int len;
-      fdt_property_t *prop =
-        (fdt_property_t*)fdt_get_property_by_offset(fdt, offset, &len);
-      klog("prop tag = %lx", prop->tag);
-      klog("prop len = %lx", prop->len);
-      klog("prop data as str = %s", prop->data);
-      break;
-  case FDT_END_NODE:
-    klog("got tag FDT_END_NODE");
-    break;
-  case FDT_NOP:
-    klog("got tag FDT_NOP");
-    break;
-  case FDT_END:
-    klog("got tag FDT_END");
-    break;
-  }
+    switch (tag) {
+      case FDT_BEGIN_NODE:
+        klog("got tag FDT_BEGIN_NODE");
+        name = (char *)fdt_get_name(fdt, offset, NULL);
+        klog("name = %s", name);
+        break;
+      case FDT_PROP:
+        klog("got tag FDT_PROP");
+        int len;
+        fdt_property_t *prop =
+          (fdt_property_t *)fdt_get_property_by_offset(fdt, offset, &len);
+        klog("prop tag = %lx", prop->tag);
+        klog("prop len = %lx", prop->len);
+        klog("prop data as str = %s", prop->data);
+        break;
+      case FDT_END_NODE:
+        klog("got tag FDT_END_NODE");
+        break;
+      case FDT_NOP:
+        klog("got tag FDT_NOP");
+        break;
+      case FDT_END:
+        klog("got tag FDT_END");
+        break;
+    }
     klog("-----");
     offset = nextoffset;
-    if(tag == FDT_END)
+    if (tag == FDT_END)
       break;
   }
 
   klog("Switching to 'kernel-main' thread...");
 }
-
-
-
