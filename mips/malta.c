@@ -231,3 +231,6 @@ void platform_init(int argc, char **argv, char **envp, unsigned memsize) {
 
   klog("Switching to 'kernel-main' thread...");
 }
+
+
+
