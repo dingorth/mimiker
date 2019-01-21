@@ -60,7 +60,7 @@ typedef struct fdt_property {
    (EXTRACT_BYTE(x, 4) << 24) | (EXTRACT_BYTE(x, 5) << 16) |                   \
    (EXTRACT_BYTE(x, 6) << 8) | EXTRACT_BYTE(x, 7))
 
-#define FDT_TAGSiZE sizeof(fdt32_t)
+#define FDT_TAGSIZE sizeof(fdt32_t)
 #define FDT_ALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 #define FDT_TAGALIGN(x) (FDT_ALIGN((x), FDT_TAGSIZE))
 
@@ -214,6 +214,7 @@ void fdt_print_header_info(const void *fdt);
 
 /* prints whole tree */
 void print_whole_fdt(const void *fdt);
+void fdt_print_all_tags(const void *fdt);
 
 /**********************************************************************/
 /* Low-level functions (you probably don't need these)                */

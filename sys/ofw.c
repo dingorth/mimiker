@@ -32,6 +32,49 @@ void fdt_print_header_info(const void *fdt) {
   klog("fdt_off_mem_rsvmap: 0x%lx", fdt_off_mem_rsvmap(fdt));
 }
 
+void fdt_print_all_tags(const void *fdt){
+
+  char *name;
+
+  int nextoffset;
+  int offset = 0;
+  while (true) {
+    uint32_t tag = fdt_next_tag(fdt, offset, &nextoffset);
+    klog("tag = %ld at offset 0x%lx", tag, offset);
+    klog("nextoffset = %lx", nextoffset);
+    switch (tag) {
+      case FDT_BEGIN_NODE:
+        klog("got tag FDT_BEGIN_NODE");
+        name = (char *)fdt_get_name(fdt, offset, NULL);
+        klog("name = %s", name);
+        break;
+      case FDT_PROP:
+        klog("got tag FDT_PROP");
+        int len;
+        fdt_property_t *prop =
+          (fdt_property_t *)fdt_get_property_by_offset(fdt, offset, &len);
+        klog("prop tag = %lx", prop->tag);
+        klog("prop len = %lx", prop->len);
+        klog("prop data as str = %s", prop->data);
+        break;
+      case FDT_END_NODE:
+        klog("got tag FDT_END_NODE");
+        break;
+      case FDT_NOP:
+        klog("got tag FDT_NOP");
+        break;
+      case FDT_END:
+        klog("got tag FDT_END");
+        break;
+    }
+    klog("-----");
+    offset = nextoffset;
+    if (tag == FDT_END)
+      break;
+  }
+
+
+}
 
 static void print_node_recursive(const void* fdt, int nodeoffset){
   int propertyoffset;
@@ -63,6 +106,7 @@ static void print_node_recursive(const void* fdt, int nodeoffset){
 
   int child_nodeoffset;
   fdt_for_each_subnode(child_nodeoffset, fdt, nodeoffset){
+    klog("subnode enter");
     print_node_recursive(fdt, child_nodeoffset);
   }
 
@@ -70,9 +114,8 @@ static void print_node_recursive(const void* fdt, int nodeoffset){
   klog("END NODE");
 }
 
-void print_whole_fdt(const void* fdt){
-  unsigned first_node_offset = fdt_off_dt_struct(fdt);
-  print_node_recursive(fdt, first_node_offset);
+inline void print_whole_fdt(const void* fdt){
+  print_node_recursive(fdt, 0);
 }
 
 static inline const void *fdt_offset_ptr_(const void *fdt, int offset) {
