@@ -38,6 +38,7 @@ initrd.o: initrd.cpio
 
 # When multiple platforms are available, parametrize following rules.
 malta.dtb:
+	mkdir -p dtb
 	dtc -O dtb -o dtb/malta.dtb mips/malta.dts
 
 dtb.o: malta.dtb
