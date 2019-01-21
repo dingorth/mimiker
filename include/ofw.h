@@ -48,6 +48,8 @@ typedef struct fdt_property {
   char data[0];
 } fdt_property_t;
 
+
+/* FDT values are BIG-ENDIAN, so we need some conversion. */
 #define EXTRACT_BYTE(x, n) ((unsigned long long)((uint8_t *)&x)[n])
 #define CPU_TO_FDT16(x) ((EXTRACT_BYTE(x, 0) << 8) | EXTRACT_BYTE(x, 1))
 #define CPU_TO_FDT32(x)                                                        \
@@ -63,9 +65,6 @@ typedef struct fdt_property {
 #define FDT_ALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 #define FDT_TAGALIGN(x) (FDT_ALIGN((x), FDT_TAGSIZE))
 
-/* #define fdt_for_each_property_offset(property, fdt, node) \ */
-/*   for (property = fdt_first_property_offset(fdt, node); property >= 0; \ */
-/*        property = fdt_next_property_offset(fdt, property)) */
 
 static inline uint16_t fdt16_to_cpu(fdt16_t x) {
   return (uint16_t)CPU_TO_FDT16(x);
@@ -81,6 +80,11 @@ static inline uint32_t fdt32_to_cpu(fdt32_t x) {
 static inline fdt32_t cpu_to_fdt32(uint32_t x) {
   return (fdt32_t)CPU_TO_FDT32(x);
 }
+
+#undef CPU_TO_FDT64
+#undef CPU_TO_FDT32
+#undef CPU_TO_FDT16
+#undef EXTRACT_BYTE
 
 /* fdt_header_t getters */
 #define fdt_get_header(fdt, field)                                             \
@@ -98,6 +102,10 @@ static inline fdt32_t cpu_to_fdt32(uint32_t x) {
 
 #define FDT_MAGIC 0xd00dfeed /* 4: version, 4: total size */
 #define FDT_TAGSIZE sizeof(fdt32_t)
+
+#define FDT_FIRST_SUPPORTED_VERSION	0x02
+#define FDT_LAST_SUPPORTED_VERSION	0x11
+#define FDT_SW_MAGIC		(~FDT_MAGIC)
 
 #define FDT_BEGIN_NODE 0x1 /* Start node: full name */
 #define FDT_END_NODE 0x2   /* End node */
@@ -195,27 +203,82 @@ static inline fdt32_t cpu_to_fdt32(uint32_t x) {
 
 /* Fdt functions */
 int fdt_check_header(const void *fdt);
-void fdt_print_header_info(const void *fdt);
-phandle_t fdt_offset_phandle(const void *fdt, int offset);
-int fdt_phandle_offset(const void *fdt, phandle_t p);
-const char *fdt_get_name(const void *fdt, int nodeoffset, int *len);
-const void *fdt_offset_ptr_(const void *fdt, int offset);
-uint32_t fdt_next_tag(const void *fdt, int startoffset, int *nextoffset);
-const void *fdt_offset_ptr(const void *fdt, int offset, unsigned int len);
-int fdt_first_property_offset(const void *fdt, int nodeoffset);
-int fdt_check_node_offset_(const void *fdt, int offset);
-int fdt_next_property_offset(const void *fdt, int offset);
-int fdt_check_prop_offset_(const void *fdt, int offset);
-const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
-                                                      int offset, int *lenp);
 
+/* maybe not needed */
+void fdt_print_header_info(const void *fdt);
+
+
+
+/**********************************************************************/
+/* Traversal functions                                                */
+/**********************************************************************/
+
+/**
+ * fdt_first_subnode() - get offset of first direct subnode
+ *
+ * @fdt:	FDT blob
+ * @offset:	Offset of node to check
+ * @return offset of first subnode, or -FDT_ERR_NOTFOUND if there is none
+ */
+int fdt_first_subnode(const void *fdt, int offset);
+
+/**
+ * fdt_next_subnode() - get offset of next direct subnode
+ *
+ * After first calling fdt_first_subnode(), call this function repeatedly to
+ * get direct subnodes of a parent node.
+ *
+ * @fdt:	FDT blob
+ * @offset:	Offset of previous subnode
+ * @return offset of next subnode, or -FDT_ERR_NOTFOUND if there are no more
+ * subnodes
+ */
+int fdt_next_subnode(const void *fdt, int offset);
+
+/**
+ * fdt_for_each_subnode - iterate over all subnodes of a parent
+ *
+ * @node:	child node (int, lvalue)
+ * @fdt:	FDT blob (const void *)
+ * @parent:	parent node (int)
+ *
+ * This is actually a wrapper around a for loop and would be used like so:
+ *
+ *	fdt_for_each_subnode(node, fdt, parent) {
+ *		Use node
+ *		...
+ *	}
+ *
+ *	if ((node < 0) && (node != -FDT_ERR_NOT_FOUND)) {
+ *		Error handling
+ *	}
+ *
+ * Note that this is implemented as a macro and @node is used as
+ * iterator in the loop. The parent variable be constant or even a
+ * literal.
+ *
+ */
+#define fdt_for_each_subnode(node, fdt, parent)		\
+	for (node = fdt_first_subnode(fdt, parent);	\
+	     node >= 0;					\
+	     node = fdt_next_subnode(fdt, node))
+
+/**********************************************************************/
+/* Read-only functions                                                */
+/**********************************************************************/
+
+/**
+ * fdt_string - retrieve a string from the strings block of a device tree
+ * @fdt: pointer to the device tree blob
+ * @stroffset: offset of the string within the strings block (native endian)
+ *
+ * fdt_string() retrieves a pointer to a single string from the
+ * strings block of the device tree blob at fdt.
+ *
+ * returns:
+ *     a pointer to the string, on success
+ *     NULL, if stroffset is out of bounds
+ */
 const char *fdt_string(const void *fdt, int stroffset);
-const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
-                                                      int offset, int *lenp);
-const struct fdt_property *fdt_get_property_namelen(const void *fdt, int offset,
-                                                    const char *name,
-                                                    int namelen, int *lenp);
-const struct fdt_property *fdt_get_property(const void *fdt, int nodeoffset,
-                                            const char *name, int *lenp);
 
 #endif
