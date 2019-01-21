@@ -20,7 +20,6 @@ int fdt_check_header(const void *fdt) {
   return 0;
 }
 
-/* prints basic info from fdt_header */
 void fdt_print_header_info(const void *fdt) {
   klog("dtb_base_address: 0x%lx", fdt);
   klog("fdt_magic: 0x%lx", fdt_magic(fdt));
@@ -31,6 +30,49 @@ void fdt_print_header_info(const void *fdt) {
   klog("fdt_off_dt_strings: 0x%lx", fdt_off_dt_strings(fdt));
   klog("fdt_size_dt_strings: %ld", fdt_size_dt_strings(fdt));
   klog("fdt_off_mem_rsvmap: 0x%lx", fdt_off_mem_rsvmap(fdt));
+}
+
+
+static void print_node_recursive(const void* fdt, int nodeoffset){
+  int propertyoffset;
+  int namelen;
+  klog("BEGIN NODE");
+  klog("node name: %s, len: %d",
+       fdt_get_name(fdt, nodeoffset, &namelen),
+       namelen);
+
+  #define PATHBUF_LEN 100
+  char path[PATHBUF_LEN];
+  fdt_get_path(fdt, nodeoffset, path, PATHBUF_LEN);
+  klog("full path: %s", path);
+
+  klog("BEGIN NODE PROPS");
+
+  const fdt_property_t* prop_ptr;
+  int proplen;
+  const char *prop_name;
+  const void *prop_value_ptr;
+
+
+  fdt_for_each_property_offset(propertyoffset, fdt, nodeoffset){
+    prop_ptr = fdt_get_property_by_offset(fdt, propertyoffset, &proplen);
+    prop_value_ptr = prop_ptr->data;
+    prop_name = fdt_string(fdt, prop_ptr->nameoff);
+    klog("%s = 0x%lx", prop_name, (int)prop_value_ptr);
+  }
+
+  int child_nodeoffset;
+  fdt_for_each_subnode(child_nodeoffset, fdt, nodeoffset){
+    print_node_recursive(fdt, child_nodeoffset);
+  }
+
+  klog("END NODE PROPS");
+  klog("END NODE");
+}
+
+void print_whole_fdt(const void* fdt){
+  unsigned first_node_offset = fdt_off_dt_struct(fdt);
+  print_node_recursive(fdt, first_node_offset);
 }
 
 static inline const void *fdt_offset_ptr_(const void *fdt, int offset) {
@@ -287,6 +329,22 @@ fdt_get_property_by_offset_(const void *fdt, int offset, int *lenp) {
     *lenp = fdt32_to_cpu(prop->len);
 
   return prop;
+}
+
+const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
+                                                      int offset,
+                                                      int *lenp)
+{
+	/* Prior to version 16, properties may need realignment
+	 * and this API does not work. fdt_getprop_*() will, however. */
+
+	if (fdt_version(fdt) < 0x10) {
+		if (lenp)
+			*lenp = -FDT_ERR_BADVERSION;
+		return NULL;
+	}
+
+	return fdt_get_property_by_offset_(fdt, offset, lenp);
 }
 
 static const struct fdt_property *

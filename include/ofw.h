@@ -212,6 +212,9 @@ int fdt_check_header(const void *fdt);
 /* maybe not needed */
 void fdt_print_header_info(const void *fdt);
 
+/* prints whole tree */
+void print_whole_fdt(const void *fdt);
+
 /**********************************************************************/
 /* Low-level functions (you probably don't need these)                */
 /**********************************************************************/
@@ -394,6 +397,38 @@ int fdt_next_property_offset(const void *fdt, int offset);
  */
 const void *fdt_getprop_namelen(const void *fdt, int nodeoffset,
                                 const char *name, int namelen, int *lenp);
+
+/**
+ * fdt_get_property_by_offset - retrieve the property at a given offset
+ * @fdt: pointer to the device tree blob
+ * @offset: offset of the property to retrieve
+ * @lenp: pointer to an integer variable (will be overwritten) or NULL
+ *
+ * fdt_get_property_by_offset() retrieves a pointer to the
+ * fdt_property structure within the device tree blob at the given
+ * offset.  If lenp is non-NULL, the length of the property value is
+ * also returned, in the integer pointed to by lenp.
+ *
+ * Note that this code only works on device tree versions >= 16. fdt_getprop()
+ * works on all versions.
+ *
+ * returns:
+ *	pointer to the structure representing the property
+ *		if lenp is non-NULL, *lenp contains the length of the property
+ *		value (>=0)
+ *	NULL, on error
+ *		if lenp is non-NULL, *lenp contains an error code (<0):
+ *		-FDT_ERR_BADOFFSET, nodeoffset did not point to FDT_PROP tag
+ *		-FDT_ERR_BADMAGIC,
+ *		-FDT_ERR_BADVERSION,
+ *		-FDT_ERR_BADSTATE,
+ *		-FDT_ERR_BADSTRUCTURE,
+ *		-FDT_ERR_TRUNCATED, standard meanings
+ */
+const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
+						      int offset,
+						      int *lenp);
+
 
 /**
  * fdt_getprop - retrieve the value of a given property
