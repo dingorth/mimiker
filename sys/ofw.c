@@ -334,61 +334,52 @@ const void *fdt_getprop(const void *fdt, int nodeoffset, const char *name,
   return fdt_getprop_namelen(fdt, nodeoffset, name, strlen(name), lenp);
 }
 
+int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen) {
+  int pdepth = 0, p = 0;
+  int offset, depth, namelen;
+  const char *name;
 
+  FDT_CHECK_HEADER(fdt);
 
+  if (buflen < 2)
+    return -FDT_ERR_NOSPACE;
 
-int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen)
-{
-	int pdepth = 0, p = 0;
-	int offset, depth, namelen;
-	const char *name;
+  for (offset = 0, depth = 0; (offset >= 0) && (offset <= nodeoffset);
+       offset = fdt_next_node(fdt, offset, &depth)) {
+    while (pdepth > depth) {
+      do {
+        p--;
+      } while (buf[p - 1] != '/');
+      pdepth--;
+    }
 
-	FDT_CHECK_HEADER(fdt);
+    if (pdepth >= depth) {
+      name = fdt_get_name(fdt, offset, &namelen);
+      if (!name)
+        return namelen;
+      if ((p + namelen + 1) <= buflen) {
+        memcpy(buf + p, name, namelen);
+        p += namelen;
+        buf[p++] = '/';
+        pdepth++;
+      }
+    }
 
-	if (buflen < 2)
-		return -FDT_ERR_NOSPACE;
+    if (offset == nodeoffset) {
+      if (pdepth < (depth + 1))
+        return -FDT_ERR_NOSPACE;
 
-	for (offset = 0, depth = 0;
-	     (offset >= 0) && (offset <= nodeoffset);
-	     offset = fdt_next_node(fdt, offset, &depth)) {
-		while (pdepth > depth) {
-			do {
-				p--;
-			} while (buf[p-1] != '/');
-			pdepth--;
-		}
+      if (p > 1) /* special case so that root path is "/", not "" */
+        p--;
+      buf[p] = '\0';
+      return 0;
+    }
+  }
 
-		if (pdepth >= depth) {
-			name = fdt_get_name(fdt, offset, &namelen);
-			if (!name)
-				return namelen;
-			if ((p + namelen + 1) <= buflen) {
-				memcpy(buf + p, name, namelen);
-				p += namelen;
-				buf[p++] = '/';
-				pdepth++;
-			}
-		}
+  if ((offset == -FDT_ERR_NOTFOUND) || (offset >= 0))
+    return -FDT_ERR_BADOFFSET;
+  else if (offset == -FDT_ERR_BADOFFSET)
+    return -FDT_ERR_BADSTRUCTURE;
 
-		if (offset == nodeoffset) {
-			if (pdepth < (depth + 1))
-				return -FDT_ERR_NOSPACE;
-
-			if (p > 1) /* special case so that root path is "/", not "" */
-				p--;
-			buf[p] = '\0';
-			return 0;
-		}
-	}
-
-	if ((offset == -FDT_ERR_NOTFOUND) || (offset >= 0))
-		return -FDT_ERR_BADOFFSET;
-	else if (offset == -FDT_ERR_BADOFFSET)
-		return -FDT_ERR_BADSTRUCTURE;
-
-	return offset; /* error from fdt_next_node() */
+  return offset; /* error from fdt_next_node() */
 }
-
-
-
-

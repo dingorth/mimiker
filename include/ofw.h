@@ -64,12 +64,12 @@ typedef struct fdt_property {
 #define FDT_ALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 #define FDT_TAGALIGN(x) (FDT_ALIGN((x), FDT_TAGSIZE))
 
-#define FDT_CHECK_HEADER(fdt) \
-{ \
-  int err_;                              \
-  if ((err_ = fdt_check_header(fdt)) != 0)      \
-    return err_;                                \
-}
+#define FDT_CHECK_HEADER(fdt)                                                  \
+  {                                                                            \
+    int err_;                                                                  \
+    if ((err_ = fdt_check_header(fdt)) != 0)                                   \
+      return err_;                                                             \
+  }
 
 static inline uint16_t fdt16_to_cpu(fdt16_t x) {
   return (uint16_t)CPU_TO_FDT16(x);
@@ -426,7 +426,6 @@ const void *fdt_getprop_namelen(const void *fdt, int nodeoffset,
 const void *fdt_getprop(const void *fdt, int nodeoffset, const char *name,
                         int *lenp);
 
-
 /**
  * fdt_get_path - determine the full path of a node
  * @fdt: pointer to the device tree blob
@@ -453,7 +452,5 @@ const void *fdt_getprop(const void *fdt, int nodeoffset, const char *name,
  *	-FDT_ERR_BADSTRUCTURE, standard meanings
  */
 int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen);
-
-
 
 #endif
