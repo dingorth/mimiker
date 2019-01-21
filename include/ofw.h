@@ -48,7 +48,6 @@ typedef struct fdt_property {
   char data[0];
 } fdt_property_t;
 
-
 /* FDT values are BIG-ENDIAN, so we need some conversion. */
 #define EXTRACT_BYTE(x, n) ((unsigned long long)((uint8_t *)&x)[n])
 #define CPU_TO_FDT16(x) ((EXTRACT_BYTE(x, 0) << 8) | EXTRACT_BYTE(x, 1))
@@ -64,7 +63,6 @@ typedef struct fdt_property {
 #define FDT_TAGSiZE sizeof(fdt32_t)
 #define FDT_ALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 #define FDT_TAGALIGN(x) (FDT_ALIGN((x), FDT_TAGSIZE))
-
 
 static inline uint16_t fdt16_to_cpu(fdt16_t x) {
   return (uint16_t)CPU_TO_FDT16(x);
@@ -103,9 +101,9 @@ static inline fdt32_t cpu_to_fdt32(uint32_t x) {
 #define FDT_MAGIC 0xd00dfeed /* 4: version, 4: total size */
 #define FDT_TAGSIZE sizeof(fdt32_t)
 
-#define FDT_FIRST_SUPPORTED_VERSION	0x02
-#define FDT_LAST_SUPPORTED_VERSION	0x11
-#define FDT_SW_MAGIC		(~FDT_MAGIC)
+#define FDT_FIRST_SUPPORTED_VERSION 0x02
+#define FDT_LAST_SUPPORTED_VERSION 0x11
+#define FDT_SW_MAGIC (~FDT_MAGIC)
 
 #define FDT_BEGIN_NODE 0x1 /* Start node: full name */
 #define FDT_END_NODE 0x2   /* End node */
@@ -207,7 +205,6 @@ int fdt_check_header(const void *fdt);
 /* maybe not needed */
 void fdt_print_header_info(const void *fdt);
 
-
 /**********************************************************************/
 /* Low-level functions (you probably don't need these)                */
 /**********************************************************************/
@@ -263,10 +260,9 @@ int fdt_next_subnode(const void *fdt, int offset);
  * literal.
  *
  */
-#define fdt_for_each_subnode(node, fdt, parent)		\
-	for (node = fdt_first_subnode(fdt, parent);	\
-	     node >= 0;					\
-	     node = fdt_next_subnode(fdt, node))
+#define fdt_for_each_subnode(node, fdt, parent)                                \
+  for (node = fdt_first_subnode(fdt, parent); node >= 0;                       \
+       node = fdt_next_subnode(fdt, node))
 
 /**********************************************************************/
 /* Read-only functions                                                */
@@ -310,7 +306,6 @@ const char *fdt_string(const void *fdt, int stroffset);
  *		-FDT_ERR_BADSTATE, standard meanings
  */
 const char *fdt_get_name(const void *fdt, int nodeoffset, int *lenp);
-
 
 /**
  * fdt_first_property_offset - find the offset of a node's first property
@@ -375,27 +370,23 @@ int fdt_next_property_offset(const void *fdt, int offset);
  * iterator in the loop. The node variable can be constant or even a
  * literal.
  */
-#define fdt_for_each_property_offset(property, fdt, node)	\
-	for (property = fdt_first_property_offset(fdt, node);	\
-	     property >= 0;					\
-	     property = fdt_next_property_offset(fdt, property))
-
-
+#define fdt_for_each_property_offset(property, fdt, node)                      \
+  for (property = fdt_first_property_offset(fdt, node); property >= 0;         \
+       property = fdt_next_property_offset(fdt, property))
 
 /**
-* fdt_getprop_namelen - get property value based on substring
-* @fdt: pointer to the device tree blob
-* @nodeoffset: offset of the node whose property to find
-* @name: name of the property to find
-* @namelen: number of characters of name to consider
-* @lenp: pointer to an integer variable (will be overwritten) or NULL
-*
-* Identical to fdt_getprop(), but only examine the first namelen
-* characters of name for matching the property name.
-*/
+ * fdt_getprop_namelen - get property value based on substring
+ * @fdt: pointer to the device tree blob
+ * @nodeoffset: offset of the node whose property to find
+ * @name: name of the property to find
+ * @namelen: number of characters of name to consider
+ * @lenp: pointer to an integer variable (will be overwritten) or NULL
+ *
+ * Identical to fdt_getprop(), but only examine the first namelen
+ * characters of name for matching the property name.
+ */
 const void *fdt_getprop_namelen(const void *fdt, int nodeoffset,
-const char *name, int namelen, int *lenp);
-
+                                const char *name, int namelen, int *lenp);
 
 /**
  * fdt_getprop - retrieve the value of a given property
@@ -425,7 +416,7 @@ const char *name, int namelen, int *lenp);
  *		-FDT_ERR_BADSTRUCTURE,
  *		-FDT_ERR_TRUNCATED, standard meanings
  */
-const void *fdt_getprop(const void *fdt, int nodeoffset,
-			const char *name, int *lenp);
+const void *fdt_getprop(const void *fdt, int nodeoffset, const char *name,
+                        int *lenp);
 
 #endif

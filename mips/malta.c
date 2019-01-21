@@ -189,6 +189,5 @@ void platform_init(int argc, char **argv, char **envp, unsigned memsize) {
   fdt_check_header(fdt);
   fdt_print_header_info(fdt);
 
-
   klog("Switching to 'kernel-main' thread...");
 }
