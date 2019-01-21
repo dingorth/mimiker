@@ -64,6 +64,13 @@ typedef struct fdt_property {
 #define FDT_ALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
 #define FDT_TAGALIGN(x) (FDT_ALIGN((x), FDT_TAGSIZE))
 
+#define FDT_CHECK_HEADER(fdt) \
+{ \
+  int err_;                              \
+  if ((err_ = fdt_check_header(fdt)) != 0)      \
+    return err_;                                \
+}
+
 static inline uint16_t fdt16_to_cpu(fdt16_t x) {
   return (uint16_t)CPU_TO_FDT16(x);
 }
@@ -418,5 +425,35 @@ const void *fdt_getprop_namelen(const void *fdt, int nodeoffset,
  */
 const void *fdt_getprop(const void *fdt, int nodeoffset, const char *name,
                         int *lenp);
+
+
+/**
+ * fdt_get_path - determine the full path of a node
+ * @fdt: pointer to the device tree blob
+ * @nodeoffset: offset of the node whose path to find
+ * @buf: character buffer to contain the returned path (will be overwritten)
+ * @buflen: size of the character buffer at buf
+ *
+ * fdt_get_path() computes the full path of the node at offset
+ * nodeoffset, and records that path in the buffer at buf.
+ *
+ * NOTE: This function is expensive, as it must scan the device tree
+ * structure from the start to nodeoffset.
+ *
+ * returns:
+ *	0, on success
+ *		buf contains the absolute path of the node at
+ *		nodeoffset, as a NUL-terminated string.
+ *	-FDT_ERR_BADOFFSET, nodeoffset does not refer to a BEGIN_NODE tag
+ *	-FDT_ERR_NOSPACE, the path of the given node is longer than (bufsize-1)
+ *		characters and will not fit in the given buffer.
+ *	-FDT_ERR_BADMAGIC,
+ *	-FDT_ERR_BADVERSION,
+ *	-FDT_ERR_BADSTATE,
+ *	-FDT_ERR_BADSTRUCTURE, standard meanings
+ */
+int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen);
+
+
 
 #endif
