@@ -12,7 +12,7 @@ PHDRS
   text   PT_LOAD FLAGS(5);      /* read-only, executable */
   rodata PT_LOAD FLAGS(4);      /* read-only */
   data   PT_LOAD FLAGS(6);      /* read-write */
-  dtb    PT_LOAD FLAGS(6);      /* read-write dtb segment */
+  dtb    PT_LOAD FLAGS(4);      /* read-only dtb segment */
 }
 PROVIDE(__tlb_stride_length = 1);
 SECTIONS
