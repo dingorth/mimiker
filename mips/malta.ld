@@ -76,7 +76,7 @@ SECTIONS
   {
     __rd_start = ABSOLUTE(.);
     *(.initrd)
-    . = ALIGN(4096); /* Is it necessary?? */
+    . = ALIGN(4096);
     __rd_end = ABSOLUTE(.);
   } : rodata /* The ramdisk is read-only, so place it in read-only segment. */
 
