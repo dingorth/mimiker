@@ -107,7 +107,6 @@ SECTIONS
     __edata = ABSOLUTE(.);
   } : data
 
-
   .bss : ALIGN(4)
   {
     __bss = ABSOLUTE(.);
@@ -117,7 +116,6 @@ SECTIONS
     . = ALIGN (4);
     __ebss = ABSOLUTE(.);
   }
-
 
   /* Sections to be discarded */
   /DISCARD/ :
