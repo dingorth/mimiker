@@ -106,7 +106,6 @@ static void print_node_recursive(const void* fdt, int nodeoffset){
 
   int child_nodeoffset;
   fdt_for_each_subnode(child_nodeoffset, fdt, nodeoffset){
-    klog("subnode enter");
     print_node_recursive(fdt, child_nodeoffset);
   }
 

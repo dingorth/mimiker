@@ -187,8 +187,8 @@ void platform_init(int argc, char **argv, char **envp, unsigned memsize) {
   const void *fdt = (const void *)__dtb_start;
 
   fdt_check_header(fdt);
-  fdt_print_header_info(fdt);
-  fdt_print_all_tags(fdt);
+  /* fdt_print_header_info(fdt); */
+  /* fdt_print_all_tags(fdt); */
   print_whole_fdt(fdt);
 
 
