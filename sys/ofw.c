@@ -94,14 +94,21 @@ static void print_node_recursive(const void* fdt, int nodeoffset){
   const fdt_property_t* prop_ptr;
   int proplen;
   const char *prop_name;
-  const void *prop_value_ptr;
+  const char *prop_value_ptr;
 
 
   fdt_for_each_property_offset(propertyoffset, fdt, nodeoffset){
     prop_ptr = fdt_get_property_by_offset(fdt, propertyoffset, &proplen);
     prop_value_ptr = prop_ptr->data;
     prop_name = fdt_string(fdt, prop_ptr->nameoff);
-    klog("%s = 0x%lx", prop_name, (int)prop_value_ptr);
+
+    if(prop_name == NULL){
+      klog("prop name: NULL, prop_value as str = %s", prop_value_ptr);
+    } else {
+      // this causes PANIC sometimes
+      /* klog("prop name: %s, prop_value as str = %s", prop_name, prop_value_ptr); */
+      (void)prop_name;
+    }
   }
 
   int child_nodeoffset;
