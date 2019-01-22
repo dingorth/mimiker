@@ -32,7 +32,7 @@ void fdt_print_header_info(const void *fdt) {
   klog("fdt_off_mem_rsvmap: 0x%lx", fdt_off_mem_rsvmap(fdt));
 }
 
-void fdt_print_all_tags(const void *fdt){
+void fdt_print_all_tags(const void *fdt) {
 
   char *name;
 
@@ -72,47 +72,37 @@ void fdt_print_all_tags(const void *fdt){
     if (tag == FDT_END)
       break;
   }
-
-
 }
 
-static void print_node_recursive(const void* fdt, int nodeoffset){
+static void print_node_recursive(const void *fdt, int nodeoffset) {
   int propertyoffset;
   int namelen;
   klog("BEGIN NODE");
-  klog("node name: %s, len: %d",
-       fdt_get_name(fdt, nodeoffset, &namelen),
+  klog("node name: %s, len: %d", fdt_get_name(fdt, nodeoffset, &namelen),
        namelen);
 
-  #define PATHBUF_LEN 100
+#define PATHBUF_LEN 100
   char path[PATHBUF_LEN];
   fdt_get_path(fdt, nodeoffset, path, PATHBUF_LEN);
   klog("full path: %s", path);
 
   klog("BEGIN NODE PROPS");
 
-  const fdt_property_t* prop_ptr;
+  const fdt_property_t *prop_ptr;
   int proplen;
   const char *prop_name;
   const char *prop_value_ptr;
 
-
-  fdt_for_each_property_offset(propertyoffset, fdt, nodeoffset){
+  fdt_for_each_property_offset(propertyoffset, fdt, nodeoffset) {
     prop_ptr = fdt_get_property_by_offset(fdt, propertyoffset, &proplen);
     prop_value_ptr = prop_ptr->data;
-    prop_name = fdt_string(fdt, prop_ptr->nameoff);
+    prop_name = fdt_string(fdt, fdt32_to_cpu(prop_ptr->nameoff));
 
-    if(prop_name == NULL){
-      klog("prop name: NULL, prop_value as str = %s", prop_value_ptr);
-    } else {
-      // this causes PANIC sometimes
-      /* klog("prop name: %s, prop_value as str = %s", prop_name, prop_value_ptr); */
-      (void)prop_name;
-    }
+    klog("prop name: %s, prop_value as str = %s", prop_name, prop_value_ptr);
   }
 
   int child_nodeoffset;
-  fdt_for_each_subnode(child_nodeoffset, fdt, nodeoffset){
+  fdt_for_each_subnode(child_nodeoffset, fdt, nodeoffset) {
     print_node_recursive(fdt, child_nodeoffset);
   }
 
@@ -120,7 +110,7 @@ static void print_node_recursive(const void* fdt, int nodeoffset){
   klog("END NODE");
 }
 
-inline void print_whole_fdt(const void* fdt){
+inline void print_whole_fdt(const void *fdt) {
   print_node_recursive(fdt, 0);
 }
 
@@ -381,19 +371,17 @@ fdt_get_property_by_offset_(const void *fdt, int offset, int *lenp) {
 }
 
 const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
-                                                      int offset,
-                                                      int *lenp)
-{
-	/* Prior to version 16, properties may need realignment
-	 * and this API does not work. fdt_getprop_*() will, however. */
+                                                      int offset, int *lenp) {
+  /* Prior to version 16, properties may need realignment
+   * and this API does not work. fdt_getprop_*() will, however. */
 
-	if (fdt_version(fdt) < 0x10) {
-		if (lenp)
-			*lenp = -FDT_ERR_BADVERSION;
-		return NULL;
-	}
+  if (fdt_version(fdt) < 0x10) {
+    if (lenp)
+      *lenp = -FDT_ERR_BADVERSION;
+    return NULL;
+  }
 
-	return fdt_get_property_by_offset_(fdt, offset, lenp);
+  return fdt_get_property_by_offset_(fdt, offset, lenp);
 }
 
 static const struct fdt_property *

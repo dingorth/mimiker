@@ -191,6 +191,5 @@ void platform_init(int argc, char **argv, char **envp, unsigned memsize) {
   /* fdt_print_all_tags(fdt); */
   print_whole_fdt(fdt);
 
-
   klog("Switching to 'kernel-main' thread...");
 }

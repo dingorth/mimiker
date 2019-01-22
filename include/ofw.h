@@ -427,9 +427,7 @@ const void *fdt_getprop_namelen(const void *fdt, int nodeoffset,
  *		-FDT_ERR_TRUNCATED, standard meanings
  */
 const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
-						      int offset,
-						      int *lenp);
-
+                                                      int offset, int *lenp);
 
 /**
  * fdt_getprop - retrieve the value of a given property
