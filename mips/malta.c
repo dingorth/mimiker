@@ -21,7 +21,7 @@
 #include <turnstile.h>
 #include <vm_map.h>
 
-#include <ofw.h>
+#include <fdt.h>
 
 extern int kernel_init(int argc, char **argv);
 
