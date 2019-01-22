@@ -21,7 +21,7 @@ distclean-here:
 	$(RM) -r sysroot
 
 # Lists of all files that we consider operating system sources.
-SRCDIRS = include $(KERNDIR) lib/libmimiker
+SRCDIRS = include $(KERNDIR) lib/libmimiker 
 SRCFILES_C = $(shell find $(SRCDIRS) -iname '*.[ch]')
 SRCFILES_ASM = $(shell find $(SRCDIRS) -iname '*.S')
 SRCFILES = $(SRCFILES_C) $(SRCFILES_ASM)

@@ -38,15 +38,14 @@ initrd.o: initrd.cpio
 
 # When multiple platforms are available, parametrize following rules.
 malta.dtb:
-	mkdir -p dtb
-	dtc -O dtb -o dtb/malta.dtb mips/malta.dts
+	dtc -O dtb -o malta.dtb mips/malta.dts
 
 dtb.o: malta.dtb
 	@echo "[DTB] Building dtb.o from malta.dtb"
 	$(OBJCOPY) -I binary -O elf32-littlemips -B mips \
 	  --rename-section .data=.dtb,alloc,load,readonly,data,contents \
-	  dtb/malta.dtb dtb.o
+	  malta.dtb dtb.o
 
 
-CLEAN-FILES += mimiker.elf mimiker.elf.map initrd.cpio initrd.o dtb.o dtb/malta.dtb
+CLEAN-FILES += mimiker.elf mimiker.elf.map initrd.cpio initrd.o dtb.o malta.dtb
 PHONY-TARGETS += initrd.cpio
