@@ -300,7 +300,7 @@ int fdt_first_subnode(const void *fdt, int offset);
 int fdt_next_subnode(const void *fdt, int offset);
 
 /**
- * fdt_for_each_subnode - iterate over all subnodes of a parent
+ * FDT_FOR_EACH_SUBNODE - iterate over all subnodes of a parent
  *
  * @node:	child node (int, lvalue)
  * @fdt:	FDT blob (const void *)
@@ -308,7 +308,7 @@ int fdt_next_subnode(const void *fdt, int offset);
  *
  * This is actually a wrapper around a for loop and would be used like so:
  *
- *	fdt_for_each_subnode(node, fdt, parent) {
+ *	FDT_FOR_EACH_SUBNODE(node, fdt, parent) {
  *		Use node
  *		...
  *	}
@@ -322,7 +322,7 @@ int fdt_next_subnode(const void *fdt, int offset);
  * literal.
  *
  */
-#define fdt_for_each_subnode(node, fdt, parent)                                \
+#define FDT_FOR_EACH_SUBNODE(node, fdt, parent)                                \
   for (node = fdt_first_subnode(fdt, parent); node >= 0;                       \
        node = fdt_next_subnode(fdt, node))
 
@@ -411,7 +411,7 @@ int fdt_first_property_offset(const void *fdt, int nodeoffset);
 int fdt_next_property_offset(const void *fdt, int offset);
 
 /**
- * fdt_for_each_property_offset - iterate over all properties of a node
+ * FDT_FOR_EACH_PROPERTY_OFFSET - iterate over all properties of a node
  *
  * @property_offset:	property offset (int, lvalue)
  * @fdt:		FDT blob (const void *)
@@ -419,7 +419,7 @@ int fdt_next_property_offset(const void *fdt, int offset);
  *
  * This is actually a wrapper around a for loop and would be used like so:
  *
- *	fdt_for_each_property_offset(property, fdt, node) {
+ *	FDT_FOR_EACH_PROPERTY_OFFSET(property, fdt, node) {
  *		Use property
  *		...
  *	}
@@ -432,7 +432,7 @@ int fdt_next_property_offset(const void *fdt, int offset);
  * iterator in the loop. The node variable can be constant or even a
  * literal.
  */
-#define fdt_for_each_property_offset(property, fdt, node)                      \
+#define FDT_FOR_EACH_PROPERTY_OFFSET(property, fdt, node)                      \
   for (property = fdt_first_property_offset(fdt, node); property >= 0;         \
        property = fdt_next_property_offset(fdt, property))
 

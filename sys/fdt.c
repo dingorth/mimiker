@@ -164,7 +164,7 @@ static void print_node_recursive(const void *fdt, int nodeoffset) {
   const char *prop_name;
   const char *prop_value_ptr;
 
-  fdt_for_each_property_offset(propertyoffset, fdt, nodeoffset) {
+  FDT_FOR_EACH_PROPERTY_OFFSET(propertyoffset, fdt, nodeoffset) {
     prop_ptr = fdt_get_property_by_offset(fdt, propertyoffset, &proplen);
     prop_value_ptr = prop_ptr->data;
     prop_name = fdt_string(fdt, fdt32_to_cpu(prop_ptr->nameoff));
@@ -173,7 +173,7 @@ static void print_node_recursive(const void *fdt, int nodeoffset) {
   }
 
   int child_nodeoffset;
-  fdt_for_each_subnode(child_nodeoffset, fdt, nodeoffset) {
+  FDT_FOR_EACH_SUBNODE(child_nodeoffset, fdt, nodeoffset) {
     print_node_recursive(fdt, child_nodeoffset);
   }
 
