@@ -15,6 +15,7 @@
 #include <klog.h>
 #include <bus.h>
 #include <devclass.h>
+#include <devhints.h>
 
 #define PCI0_CFG_REG_SHIFT 2
 #define PCI0_CFG_FUNCT_SHIFT 8
