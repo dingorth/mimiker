@@ -55,5 +55,5 @@ sysroot
 # Visual Studio Code files
 .vscode
 
-# DTB generated files
+# DTB
 *.dtb
