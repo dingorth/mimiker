@@ -6,28 +6,27 @@
 
 #include "utest.h"
 
-
-int test_setpgid(void){
+int test_setpgid(void) {
   /* Init process can create and enter new process group. */
   assert(!setpgid(1, 0));
 
   pid_t pid = fork();
   if (pid == 0) {
-	  	/* Process inherits group of its parent. */
-		assert(getpgid(0) == 1);
-	       	/* Process can make its own group. */
-		assert(!setpgid(0, 0));
-		/* New group has ID equal to the ID of the moved process. */
-		assert(getpgid(0) == getpid());
+    /* Process inherits group of its parent. */
+    assert(getpgid(0) == 1);
+    /* Process can make its own group. */
+    assert(!setpgid(0, 0));
+    /* New group has ID equal to the ID of the moved process. */
+    assert(getpgid(0) == getpid());
 
-		exit(0);
-	}
-	wait(NULL);
+    exit(0);
+  }
+  wait(NULL);
 
-	/* It is forbidden to move the process to non-existing group. */
-	assert(setpgid(0, pid));
-	/* It is forbidden to change the group of non-existing process. */
-	assert(setpgid(pid, pid));
+  /* It is forbidden to move the process to non-existing group. */
+  assert(setpgid(0, pid));
+  /* It is forbidden to change the group of non-existing process. */
+  assert(setpgid(pid, pid));
 
   return 0;
 }
@@ -35,37 +34,37 @@ int test_setpgid(void){
 static int sig_delivered = 0;
 
 static void sa_handler(int signo) {
-	assert(signo == SIGUSR1);
-	sig_delivered = 1;
+  assert(signo == SIGUSR1);
+  sig_delivered = 1;
 }
 
 static void kill_tests_setup(void) {
-	setpgid(0, 1);
+  setpgid(0, 1);
 
-	sigaction_t newact;
-	sigaction_t oldact;
+  sigaction_t newact;
+  sigaction_t oldact;
 
-	newact.sa_handler = sa_handler;
-	newact.sa_restorer = sigreturn;
-	sigaction(SIGUSR1, &newact, &oldact);
+  newact.sa_handler = sa_handler;
+  newact.sa_restorer = sigreturn;
+  sigaction(SIGUSR1, &newact, &oldact);
 }
 
 int test_kill(void) {
-  	kill_tests_setup();
+  kill_tests_setup();
 
-	pid_t pid = fork();
-	if (pid == 0) {
-		kill(1, SIGUSR1);
-		/* Signal is not delivered to all processes in the group. */
-		assert(!sig_delivered);
-		exit(0);
-	}
-	
-	wait(NULL);
-	/* Signal is delivered to appropriate process. */
-	assert(sig_delivered);
+  pid_t pid = fork();
+  if (pid == 0) {
+    kill(1, SIGUSR1);
+    /* Signal is not delivered to all processes in the group. */
+    assert(!sig_delivered);
+    exit(0);
+  }
 
-	return 0;
+  wait(NULL);
+  /* Signal is delivered to appropriate process. */
+  assert(sig_delivered);
+
+  return 0;
 }
 
 /* In this tests there are five processes marked with: init, a, b, c and d.
@@ -73,61 +72,60 @@ int test_kill(void) {
  * Process d sends signal to the process group containing b and c.
  * Process a sends signal to own process group containing init and a. */
 int test_killpg(void) {
-	kill_tests_setup();
+  kill_tests_setup();
 
-	pid_t pid_a = fork();
-	if (pid_a == 0) {
+  pid_t pid_a = fork();
+  if (pid_a == 0) {
 
-		pid_t pid_b = fork();
-		if (pid_b == 0) {
-			setpgid(0, 0);
-			pid_t pgid_b = getpgid(0);
+    pid_t pid_b = fork();
+    if (pid_b == 0) {
+      setpgid(0, 0);
+      pid_t pgid_b = getpgid(0);
 
-			pid_t pid_c = fork();
-			if (pid_c == 0) {
+      pid_t pid_c = fork();
+      if (pid_c == 0) {
 
-				pid_t pid_d = fork();
-				if (pid_d == 0) {
-					setpgid(0, 0);
+        pid_t pid_d = fork();
+        if (pid_d == 0) {
+          setpgid(0, 0);
 
-					assert(!killpg(pgid_b, SIGUSR1));
-					/* Process d should not receive 
-					 * signal from process d. */
-					assert(!sig_delivered);
-					exit(0); // process d
-				}
+          assert(!killpg(pgid_b, SIGUSR1));
+          /* Process d should not receive
+           * signal from process d. */
+          assert(!sig_delivered);
+          exit(0); // process d
+        }
 
-				wait(NULL);
-				/* Process c should receive signal from process d. */
-				assert(sig_delivered);
-				exit(0); // process c
-			}
+        wait(NULL);
+        /* Process c should receive signal from process d. */
+        assert(sig_delivered);
+        exit(0); // process c
+      }
 
-			wait(NULL);
-			/* Process b should receive signal from process d. */
-			assert(sig_delivered);
-			exit(0); // process b
-		}
+      wait(NULL);
+      /* Process b should receive signal from process d. */
+      assert(sig_delivered);
+      exit(0); // process b
+    }
 
-		wait(NULL);
-		/* Process a should not receive signal from process d. */
-		assert(!sig_delivered);
-		assert(!killpg(0, SIGUSR1));
-		/* Process a should receive signal from process a. */
-		assert(sig_delivered);
-		exit(0); // process a
-	}
+    wait(NULL);
+    /* Process a should not receive signal from process d. */
+    assert(!sig_delivered);
+    assert(!killpg(0, SIGUSR1));
+    /* Process a should receive signal from process a. */
+    assert(sig_delivered);
+    exit(0); // process a
+  }
 
-	wait(NULL);
-	/* Process init should receive signal from process a. */
-	assert(sig_delivered);
-	/* It is forbidden to send signal to non-existing group. */
-	assert(killpg(2, SIGUSR1));
-	/* Invalid argument. */
-	assert(killpg(1, SIGUSR1));
-	/* Invalid argument (negative number). */
-	assert(killpg(-1, SIGUSR1));
+  wait(NULL);
+  /* Process init should receive signal from process a. */
+  assert(sig_delivered);
+  /* It is forbidden to send signal to non-existing group. */
+  assert(killpg(2, SIGUSR1));
+  /* Invalid argument. */
+  assert(killpg(1, SIGUSR1));
+  /* Invalid argument (negative number). */
+  assert(killpg(-1, SIGUSR1));
 
-	return 0;
+  return 0;
 }
-
