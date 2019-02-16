@@ -86,14 +86,10 @@ void sig_kill(proc_t *proc, signo_t sig) {
   /* If the signal is ignored, don't even bother posting it. */
   sig_t handler = proc->p_sigactions[sig].sa_handler;
   if (handler == SIG_IGN ||
-      (sig_default(sig) == SA_IGNORE && handler == SIG_DFL)) {
-    proc_unlock(proc);
+      (sig_default(sig) == SA_IGNORE && handler == SIG_DFL))
     return;
-  }
 
   __sigaddset(&td->td_sigpend, sig);
-
-  proc_unlock(proc);
 
   WITH_SPIN_LOCK (&td->td_spin) {
     td->td_flags |= TDF_NEEDSIGCHK;

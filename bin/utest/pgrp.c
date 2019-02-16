@@ -39,6 +39,7 @@ static void sa_handler(int signo) {
 }
 
 static void kill_tests_setup(void) {
+  sig_delivered = 0;
   setpgid(0, 1);
 
   sigaction_t newact;

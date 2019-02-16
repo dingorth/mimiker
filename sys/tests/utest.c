@@ -83,7 +83,7 @@ UTEST_ADD_SIGNAL(signal_segfault, SIGSEGV);
 
 UTEST_ADD_SIMPLE(fork_wait);
 UTEST_ADD_SIMPLE(fork_signal);
-UTEST_ADD_SIMPLE(fork_sigchld_ignored);
+// UTEST_ADD_SIMPLE(fork_sigchld_ignored);
 
 UTEST_ADD_SIMPLE(lseek_basic);
 UTEST_ADD_SIMPLE(lseek_errors);
