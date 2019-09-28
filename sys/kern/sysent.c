@@ -17,6 +17,7 @@
 #include <sys/proc.h>
 #include <sys/pipe.h>
 #include <sys/malloc.h>
+#include <sys/sigtypes.h>
 #include <sys/syslimits.h>
 
 /* Empty syscall handler, for unimplemented and deprecated syscall numbers. */
@@ -177,6 +178,41 @@ static int sys_mprotect(thread_t *td, syscall_args_t *args) {
   vm_prot_t prot = args->args[2];
   klog("mprotect(%p, %u, %u)", (void *)addr, length, prot);
   return -ENOTSUP;
+}
+
+static int sys_sigaltstack(thread_t *td, syscall_args_t *args) {
+  stack_t *new = (stack_t *)args->args[0];
+  stack_t *old = (stack_t *)args->args[1];
+  assert(new == NULL);
+
+  klog("sigaltstack(%p, %p)", new, old);
+
+  stack_t result;
+  result.ss_sp = 0;
+  result.ss_size = 0;
+  result.ss_flags = SS_DISABLE;
+
+  int error = copyout_s(result, old);
+  if (error)
+    return error;
+  return 0;
+}
+
+static int sys_sigprocmask(thread_t *td, syscall_args_t *args) {
+  int how = args->args[0];
+  sigset_t *set = (sigset_t *)args->args[1];
+  sigset_t *oset = (sigset_t *)args->args[2];
+  assert(set == NULL);
+
+  klog("sigprocmask(%d, %p, %p)", how, set, oset);
+
+  sigset_t result = { .__bits = 0 };
+
+  int error = copyout_s(result, oset);
+  if (error)
+    return error;
+
+  return 0;
 }
 
 static int sys_open(thread_t *td, syscall_args_t *args) {
@@ -563,4 +599,6 @@ sysent_t sysent[] = {
   [SYS_mprotect] = {sys_mprotect},
   [SYS_chdir] = {sys_chdir},
   [SYS_getcwd] = {sys_getcwd},
+  [SYS_sigaltstack] = {sys_sigaltstack},
+  [SYS_sigprocmask] = {sys_sigprocmask},
 };

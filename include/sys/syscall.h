@@ -38,7 +38,8 @@
 #define SYS_chdir 35
 #define SYS_getcwd 36
 #define SYS_sigprocmask 37
+#define SYS_sigaltstack 38
 
-#define SYS_MAXSYSCALL 38
+#define SYS_MAXSYSCALL 39
 
 #endif /* !_SYS_SYSCALL_H_ */
