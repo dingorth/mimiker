@@ -19,6 +19,10 @@
 #include <sys/malloc.h>
 #include <sys/sigtypes.h>
 #include <sys/syslimits.h>
+#include <mips/mcontext.h>
+#include <sys/ucontext.h>
+#include <sys/libkern.h>
+#include <mips/exc.h>
 
 /* Empty syscall handler, for unimplemented and deprecated syscall numbers. */
 int sys_nosys(thread_t *td, syscall_args_t *args) {
@@ -184,6 +188,7 @@ static int sys_sigaltstack(thread_t *td, syscall_args_t *args) {
   stack_t *new = (stack_t *)args->args[0];
   stack_t *old = (stack_t *)args->args[1];
   assert(new == NULL);
+  assert(old != NULL);
 
   klog("sigaltstack(%p, %p)", new, old);
 
@@ -202,15 +207,44 @@ static int sys_sigprocmask(thread_t *td, syscall_args_t *args) {
   int how = args->args[0];
   sigset_t *set = (sigset_t *)args->args[1];
   sigset_t *oset = (sigset_t *)args->args[2];
-  assert(set == NULL);
+  assert(set == NULL || (set != NULL && how == SIG_SETMASK));
 
   klog("sigprocmask(%d, %p, %p)", how, set, oset);
 
-  sigset_t result = { .__bits = 0 };
+  if (set != NULL) {
+    sigset_t new;
+    copyin_s(set, new);
+    klog("sigprocmask new mask=%d", new.__bits);
+  }
 
-  int error = copyout_s(result, oset);
-  if (error)
-    return error;
+  if (oset != NULL) {
+    sigset_t result = { .__bits = 0 };
+
+    int error = copyout_s(result, oset);
+    if (error)
+      return error;
+  }
+
+  return 0;
+}
+
+static int sys_setcontext(thread_t *td, syscall_args_t *args) {
+  ucontext_t uc;
+  copyin_s((ucontext_t *)args->args[0], uc);
+
+  klog("setcontext(stack=(sp=%p, ss=%lu, m=%d), sigm=%d, pc=%p)",
+    uc.uc_stack.ss_sp, uc.uc_stack.ss_size, uc.uc_stack.ss_flags,
+    uc.uc_sigmask.__bits, uc.uc_mcontext.__gregs[_REG_EPC]);
+
+  memcpy(&td->td_uframe->at, &uc.uc_mcontext.__gregs[_REG_AT], sizeof(reg_t) * 25); // do t9
+  memcpy(&td->td_uframe->gp, &uc.uc_mcontext.__gregs[_REG_GP], sizeof(reg_t) * 6); // do hi
+
+  // td->td_uframe->lo = uc.uc_mcontext.__gregs[_REG_MDLO];
+  // td->td_uframe->hi = uc.uc_mcontext.__gregs[_REG_MDHI];
+  td->td_uframe->cause = uc.uc_mcontext.__gregs[_REG_CAUSE];
+  td->td_uframe->pc = uc.uc_mcontext.__gregs[_REG_EPC];
+
+  memcpy(&td->td_uframe->f0, &uc.uc_mcontext.__fpregs.__fp_r, sizeof(freg_t) * 33);
 
   return 0;
 }
@@ -601,4 +635,5 @@ sysent_t sysent[] = {
   [SYS_getcwd] = {sys_getcwd},
   [SYS_sigaltstack] = {sys_sigaltstack},
   [SYS_sigprocmask] = {sys_sigprocmask},
+  [SYS_setcontext] = {sys_setcontext}
 };

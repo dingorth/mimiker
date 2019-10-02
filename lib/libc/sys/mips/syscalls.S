@@ -34,7 +34,6 @@ AENT(setitimer)
 AENT(setrlimit)
 AENT(getdents)
 AENT(socketpair)
-AENT(setcontext)
 
 LEAF(no_syscall)
         b       set_errno
@@ -108,5 +107,6 @@ SYSCALL(chdir, SYS_chdir)
 SYSCALL(getcwd, SYS_getcwd)
 SYSCALL(sigaltstack, SYS_sigaltstack)
 SYSCALL(sigprocmask, SYS_sigprocmask)
+SYSCALL(setcontext, SYS_setcontext)
 
 # vim: sw=8 ts=8 et
