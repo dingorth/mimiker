@@ -218,7 +218,7 @@ static int sys_sigprocmask(thread_t *td, syscall_args_t *args) {
   }
 
   if (oset != NULL) {
-    sigset_t result = { .__bits = 0 };
+    sigset_t result = {.__bits = 0};
 
     int error = copyout_s(result, oset);
     if (error)
@@ -233,18 +233,21 @@ static int sys_setcontext(thread_t *td, syscall_args_t *args) {
   copyin_s((ucontext_t *)args->args[0], uc);
 
   klog("setcontext(stack=(sp=%p, ss=%lu, m=%d), sigm=%d, pc=%p)",
-    uc.uc_stack.ss_sp, uc.uc_stack.ss_size, uc.uc_stack.ss_flags,
-    uc.uc_sigmask.__bits, uc.uc_mcontext.__gregs[_REG_EPC]);
+       uc.uc_stack.ss_sp, uc.uc_stack.ss_size, uc.uc_stack.ss_flags,
+       uc.uc_sigmask.__bits, uc.uc_mcontext.__gregs[_REG_EPC]);
 
-  memcpy(&td->td_uframe->at, &uc.uc_mcontext.__gregs[_REG_AT], sizeof(reg_t) * 25); // do t9
-  memcpy(&td->td_uframe->gp, &uc.uc_mcontext.__gregs[_REG_GP], sizeof(reg_t) * 6); // do hi
+  memcpy(&td->td_uframe->at, &uc.uc_mcontext.__gregs[_REG_AT],
+         sizeof(reg_t) * 25); // do t9
+  memcpy(&td->td_uframe->gp, &uc.uc_mcontext.__gregs[_REG_GP],
+         sizeof(reg_t) * 6); // do hi
 
   // td->td_uframe->lo = uc.uc_mcontext.__gregs[_REG_MDLO];
   // td->td_uframe->hi = uc.uc_mcontext.__gregs[_REG_MDHI];
   td->td_uframe->cause = uc.uc_mcontext.__gregs[_REG_CAUSE];
   td->td_uframe->pc = uc.uc_mcontext.__gregs[_REG_EPC];
 
-  memcpy(&td->td_uframe->f0, &uc.uc_mcontext.__fpregs.__fp_r, sizeof(freg_t) * 33);
+  memcpy(&td->td_uframe->f0, &uc.uc_mcontext.__fpregs.__fp_r,
+         sizeof(freg_t) * 33);
 
   return 0;
 }
@@ -596,44 +599,42 @@ static int sys_clock_nanosleep(thread_t *td, syscall_args_t *args) {
 }
 
 /* clang-format hates long arrays. */
-sysent_t sysent[] = {
-  [SYS_exit] = {sys_exit},
-  [SYS_open] = {sys_open},
-  [SYS_close] = {sys_close},
-  [SYS_read] = {sys_read},
-  [SYS_write] = {sys_write},
-  [SYS_lseek] = {sys_lseek},
-  [SYS_unlink] = {sys_unlink},
-  [SYS_getpid] = {sys_getpid},
-  [SYS_getppid] = {sys_getppid},
-  [SYS_setpgid] = {sys_setpgid},
-  [SYS_getpgid] = {sys_getpgid},
-  [SYS_kill] = {sys_kill},
-  [SYS_fstat] = {sys_fstat},
-  [SYS_stat] = {sys_stat},
-  [SYS_sbrk] = {sys_sbrk},
-  [SYS_mmap] = {sys_mmap},
-  [SYS_fork] = {sys_fork},
-  [SYS_mount] = {sys_mount},
-  [SYS_getdents] = {sys_getdirentries},
-  [SYS_sigaction] = {sys_sigaction},
-  [SYS_sigreturn] = {sys_sigreturn},
-  [SYS_dup] = {sys_dup},
-  [SYS_dup2] = {sys_dup2},
-  [SYS_waitpid] = {sys_waitpid},
-  [SYS_mkdir] = {sys_mkdir},
-  [SYS_rmdir] = {sys_rmdir},
-  [SYS_access] = {sys_access},
-  [SYS_pipe] = {sys_pipe},
-  [SYS_clockgettime] = {sys_clock_gettime},
-  [SYS_clocknanosleep] = {sys_clock_nanosleep},
-  [SYS_execve] = {sys_execve},
-  [SYS_killpg] = {sys_killpg},
-  [SYS_munmap] = {sys_munmap},
-  [SYS_mprotect] = {sys_mprotect},
-  [SYS_chdir] = {sys_chdir},
-  [SYS_getcwd] = {sys_getcwd},
-  [SYS_sigaltstack] = {sys_sigaltstack},
-  [SYS_sigprocmask] = {sys_sigprocmask},
-  [SYS_setcontext] = {sys_setcontext}
-};
+sysent_t sysent[] = {[SYS_exit] = {sys_exit},
+                     [SYS_open] = {sys_open},
+                     [SYS_close] = {sys_close},
+                     [SYS_read] = {sys_read},
+                     [SYS_write] = {sys_write},
+                     [SYS_lseek] = {sys_lseek},
+                     [SYS_unlink] = {sys_unlink},
+                     [SYS_getpid] = {sys_getpid},
+                     [SYS_getppid] = {sys_getppid},
+                     [SYS_setpgid] = {sys_setpgid},
+                     [SYS_getpgid] = {sys_getpgid},
+                     [SYS_kill] = {sys_kill},
+                     [SYS_fstat] = {sys_fstat},
+                     [SYS_stat] = {sys_stat},
+                     [SYS_sbrk] = {sys_sbrk},
+                     [SYS_mmap] = {sys_mmap},
+                     [SYS_fork] = {sys_fork},
+                     [SYS_mount] = {sys_mount},
+                     [SYS_getdents] = {sys_getdirentries},
+                     [SYS_sigaction] = {sys_sigaction},
+                     [SYS_sigreturn] = {sys_sigreturn},
+                     [SYS_dup] = {sys_dup},
+                     [SYS_dup2] = {sys_dup2},
+                     [SYS_waitpid] = {sys_waitpid},
+                     [SYS_mkdir] = {sys_mkdir},
+                     [SYS_rmdir] = {sys_rmdir},
+                     [SYS_access] = {sys_access},
+                     [SYS_pipe] = {sys_pipe},
+                     [SYS_clockgettime] = {sys_clock_gettime},
+                     [SYS_clocknanosleep] = {sys_clock_nanosleep},
+                     [SYS_execve] = {sys_execve},
+                     [SYS_killpg] = {sys_killpg},
+                     [SYS_munmap] = {sys_munmap},
+                     [SYS_mprotect] = {sys_mprotect},
+                     [SYS_chdir] = {sys_chdir},
+                     [SYS_getcwd] = {sys_getcwd},
+                     [SYS_sigaltstack] = {sys_sigaltstack},
+                     [SYS_sigprocmask] = {sys_sigprocmask},
+                     [SYS_setcontext] = {sys_setcontext}};
