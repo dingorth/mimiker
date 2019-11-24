@@ -46,7 +46,6 @@ static void kill_tests_setup(void) {
   sigaction_t oldact;
 
   newact.sa_handler = sa_handler;
-  newact.sa_restorer = sigreturn;
   sigaction(SIGUSR1, &newact, &oldact);
 }
 

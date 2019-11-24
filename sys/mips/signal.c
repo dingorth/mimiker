@@ -102,5 +102,4 @@ void sig_trap(exc_frame_t *frame, signo_t sig) {
   proc_t *proc = proc_self();
   proc_lock(proc);
   sig_kill(proc, sig);
-  proc_unlock(proc);
 }

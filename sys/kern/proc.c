@@ -175,6 +175,7 @@ int proc_getpgid(pid_t pid, pgid_t *pgidp) {
     return ESRCH;
 
   *pgidp = p->p_pgrp->pg_id;
+  proc_unlock(p);
   return 0;
 }
 
@@ -257,7 +258,6 @@ __noreturn void proc_exit(int exitstatus) {
     cv_broadcast(&parent->p_waitcv);
     proc_lock(parent);
     sig_kill(parent, SIGCHLD);
-    proc_unlock(parent);
 
     klog("Turning PID(%d) into zombie!", p->p_pid);
 
@@ -280,12 +280,10 @@ int proc_sendsig(pid_t pid, signo_t sig) {
   proc_t *target;
 
   if (pid > 0) {
-    /* proc_find returns locked process */
     target = proc_find(pid);
     if (target == NULL)
       return EINVAL;
     sig_kill(target, sig);
-
     return 0;
   }
 
