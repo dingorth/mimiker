@@ -129,7 +129,9 @@ int test_killpg(void) {
     assert(killpg(1, SIGUSR1));
     /* Invalid argument (negative number). */
     assert(killpg(-1, SIGUSR1));
+    exit(0);
   }
+  wait(NULL);
 
   return 0;
 }
